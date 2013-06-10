@@ -25,6 +25,7 @@ function authorViewUpdate(){
   var lineNumber = 0;
   // below is VERY slow
   var divs = $('iframe[name="ace_outer"]').contents().find('iframe').contents().find("#innerdocbody").children("div");
+  $('iframe[name="ace_outer"]').contents().find('#sidediv').css("padding-right","0px");
   $(divs).each(function(){ // each line
     var lineAuthor = {};
     $(this).children("span").each(function(){ // each span
@@ -43,14 +44,10 @@ function authorViewUpdate(){
     var authorClass = "author-a-qtuf77vz82z3v3z69zrz72zdz87z"; // TODO get the actual class that has the most edits on this line
     // console.log(authorClass);
     var authorId = authorIdFromClass(authorClass); // Get the authorId
-console.log(authorId);
     if(!authorId){ return; } // Default text isn't shown
     var authorNameAndColor = authorNameAndColorFromAuthorId(authorId); // Get the authorName And Color
-console.log(authorNameAndColor);
-    console.log(authorNameAndColor.name, authorNameAndColor.color);
-
-
-
+    // console.log(authorNameAndColor.name, authorNameAndColor.color);
+    $('iframe[name="ace_outer"]').contents().find('#sidediv').css("border-right","solid red 5px");
     $authorContainer.html(authorName);
     lineNumber++;
   });
