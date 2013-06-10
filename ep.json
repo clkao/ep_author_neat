@@ -3,7 +3,8 @@
     {
       "name": "ep_aurthor_neat",
       "client_hooks": {
-        "aceSetAuthorStyle": "ep_author_neat/static/js/index:aceSetAuthorStyle"
+        "aceSetAuthorStyle": "ep_author_neat/static/js/index:aceSetAuthorStyle",
+        "aceEditEvent"     : "ep_author_neat/static/js/index:aceEditEvent"
       }
     }
   ]
