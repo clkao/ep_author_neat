@@ -1,7 +1,9 @@
 var out$ = typeof exports != 'undefined' && exports || this;
 
 out$.postAceInit = function (hook_name, args, cb) {
-  authorViewUpdate();
+  setTimeout(function(){ // has to wait for a bit to do this..
+    authorViewUpdate();
+  }, 500);
 }
 
 out$.aceEditEvent = function (hook_name, args, cb) { // on an edit
@@ -29,10 +31,12 @@ function authorViewUpdate(){
   // below is VERY slow
   var divs = $('iframe[name="ace_outer"]').contents().find('iframe').contents().find("#innerdocbody").children("div");
   $('iframe[name="ace_outer"]').contents().find('#sidediv').css("padding-right","0px");
+  var prevAuthorName = "";
   $(divs).each(function(){ // each line
     var lineAuthor = {};
     $(this).children("span").each(function(){ // each span
       var spanclass = $(this).attr("class");
+console.log("sc", spanclass, $(this).text());
       if(spanclass.indexOf("author") !== -1){ // if its an author span.
         var length = $(this).text().length; // the length of the span
         var newCount = length + (lineAuthor[spanclass] || 0); // this is broken.
@@ -46,15 +50,26 @@ function authorViewUpdate(){
     var authorClass = lineAuthor.name; // again see above this is broken
     if(authorClass){ // If ther eis an authorclass for this line
       // Write authorName to the sidediv..
+console.log("have authorclass", lineNumber);
+      // get previous authorContainer text
+      prevAuthorName = $('iframe[name="ace_outer"]').contents().find('#sidedivinner').find('div:nth-child('+lineNumber+')').text();
+      console.log("prevAuthorName", prevAuthorName);
+
+      lineNumber++; // seems weird to do this here but actually makes sense
       var $authorContainer = $('iframe[name="ace_outer"]').contents().find('#sidedivinner').find('div:nth-child('+lineNumber+')');
       var authorId = authorIdFromClass(authorClass); // Get the authorId
       if(!authorId){ return; } // Default text isn't shown
       var authorNameAndColor = authorNameAndColorFromAuthorId(authorId); // Get the authorName And Color
-      console.log(authorNameAndColor.name, authorNameAndColor.color);
+//      console.log(authorNameAndColor.name, authorNameAndColor.color);
       // $('iframe[name="ace_outer"]').contents().find('#sidedivinner').css("border-right","solid 5px "+authorNameAndColor.color);
+// console.log("applying css", lineNumber, $authorContainer);
       $authorContainer.css({"border-right":"solid 5px "+authorNameAndColor.color, "padding-right":"5px"});
-      $authorContainer.html(authorNameAndColor.name);
-      lineNumber++;
+      console.log(prevAuthorName);
+      if(authorNameAndColor.name !== prevAuthorName){ // if its a new author name and not the same one as the line above.
+        $authorContainer.html(authorNameAndColor.name);
+      }else{
+        $authorContainer.html("");
+      }
     }
   });
 }
