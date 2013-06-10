@@ -1,11 +1,14 @@
 var out$ = typeof exports != 'undefined' && exports || this;
 
+out$.postAceInit = function (hook_name, args, cb) {
+  authorViewUpdate();
+}
+
 out$.aceEditEvent = function (hook_name, args, cb) { // on an edit
 
   if(!args.callstack.docTextChanged){ // has the document text changed?
     return false; 
   }else{
-    console.log("edited");
     authorViewUpdate();
   }
 
@@ -25,7 +28,7 @@ function authorViewUpdate(){
   var lineNumber = 0;
   // below is VERY slow
   var divs = $('iframe[name="ace_outer"]').contents().find('iframe').contents().find("#innerdocbody").children("div");
-  $('iframe[name="ace_outer"]').contents().find('#sidediv').css("padding-right","4px");
+  $('iframe[name="ace_outer"]').contents().find('#sidediv').css("padding-right","0px");
   $(divs).each(function(){ // each line
     var lineAuthor = {};
     $(this).children("span").each(function(){ // each span
@@ -48,7 +51,8 @@ function authorViewUpdate(){
       if(!authorId){ return; } // Default text isn't shown
       var authorNameAndColor = authorNameAndColorFromAuthorId(authorId); // Get the authorName And Color
       console.log(authorNameAndColor.name, authorNameAndColor.color);
-      $('iframe[name="ace_outer"]').contents().find('#sidediv').css("border-right","solid 5px "+authorNameAndColor.color);
+      // $('iframe[name="ace_outer"]').contents().find('#sidedivinner').css("border-right","solid 5px "+authorNameAndColor.color);
+      $authorContainer.css({"border-right":"solid 5px "+authorNameAndColor.color, "padding-right":"5px"});
       $authorContainer.html(authorNameAndColor.name);
       lineNumber++;
     }
