@@ -25,31 +25,33 @@ function authorViewUpdate(){
   var lineNumber = 0;
   // below is VERY slow
   var divs = $('iframe[name="ace_outer"]').contents().find('iframe').contents().find("#innerdocbody").children("div");
-  $('iframe[name="ace_outer"]').contents().find('#sidediv').css("padding-right","0px");
+  $('iframe[name="ace_outer"]').contents().find('#sidediv').css("padding-right","4px");
   $(divs).each(function(){ // each line
     var lineAuthor = {};
     $(this).children("span").each(function(){ // each span
       var spanclass = $(this).attr("class");
       if(spanclass.indexOf("author") !== -1){ // if its an author span.
         var length = $(this).text().length; // the length of the span
-        lineAuthor[spanclass] = length + (lineAuthor[spanclass] || 0);
+        var newCount = length + (lineAuthor[spanclass] || 0); // this is broken.
+        lineAuthor.name = spanclass;
+        lineAuthor.count = newCount;
       }
-    console.log(lineAuthor);
-    });
-    // TODO sort lineAuthor by value
-    // Get author name from classname
-    var authorName = "Test";
-    // Write authorName to the sidediv..
-    var $authorContainer = $('iframe[name="ace_outer"]').contents().find('#sidedivinner').find('div:nth-child('+lineNumber+')');
-    var authorClass = "author-a-qtuf77vz82z3v3z69zrz72zdz87z"; // TODO get the actual class that has the most edits on this line
-    // console.log(authorClass);
-    var authorId = authorIdFromClass(authorClass); // Get the authorId
-    if(!authorId){ return; } // Default text isn't shown
-    var authorNameAndColor = authorNameAndColorFromAuthorId(authorId); // Get the authorName And Color
-    // console.log(authorNameAndColor.name, authorNameAndColor.color);
-    $('iframe[name="ace_outer"]').contents().find('#sidediv').css("border-right","solid red 5px");
-    $authorContainer.html(authorName);
-    lineNumber++;
+      if(Object.size(lineAuthor) > 1){ // multiple authors
+        // TODO sort lineAuthor by value
+      }
+    }); // end each span
+    var authorClass = lineAuthor.name; // again see above this is broken
+    if(authorClass){ // If ther eis an authorclass for this line
+      // Write authorName to the sidediv..
+      var $authorContainer = $('iframe[name="ace_outer"]').contents().find('#sidedivinner').find('div:nth-child('+lineNumber+')');
+      var authorId = authorIdFromClass(authorClass); // Get the authorId
+      if(!authorId){ return; } // Default text isn't shown
+      var authorNameAndColor = authorNameAndColorFromAuthorId(authorId); // Get the authorName And Color
+      console.log(authorNameAndColor.name, authorNameAndColor.color);
+      $('iframe[name="ace_outer"]').contents().find('#sidediv').css("border-right","solid 5px "+authorNameAndColor.color);
+      $authorContainer.html(authorNameAndColor.name);
+      lineNumber++;
+    }
   });
 }
 
@@ -61,7 +63,6 @@ function fadeColor(colorCSS, fadeFrac){
 }
 out$.aceSetAuthorStyle = aceSetAuthorStyle;
 function aceSetAuthorStyle(name, context){
-console.log("yayaya");
   var dynamicCSS, parentDynamicCSS, info, author, authorSelector, color, authorStyle, parentAuthorStyle, anchorStyle;
   dynamicCSS = context.dynamicCSS, parentDynamicCSS = context.parentDynamicCSS, info = context.info, author = context.author, authorSelector = context.authorSelector;
   if (info) {
@@ -101,7 +102,7 @@ function authorNameAndColorFromAuthorId(authorId){
     if(myAuthorId == authorId){
       return {
         name: "Me",
-        color: "#fff"
+        color: pad.myUserInfo.colorId
       }
     }
 
@@ -127,3 +128,12 @@ function authorNameAndColorFromAuthorId(authorId){
 
     return authorObj || {name: "Unknown Author", color: "#fff"};
 }
+
+Object.size = function(obj) { // http://stackoverflow.com/questions/5223/length-of-javascript-object-ie-associative-array
+    var size = 0, key;
+    for (key in obj) {
+        if (obj.hasOwnProperty(key)) size++;
+    }
+    return size;
+};
+
