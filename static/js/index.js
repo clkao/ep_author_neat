@@ -65,11 +65,20 @@ function authorViewUpdate(){
         }
       });
     }
+
+    // remove the primary authorColor underline
+    $(this).children("span").each(function(){ // each span
+      var spanclass = $(this).attr("class");
+      if(spanclass.indexOf("author") !== -1){ // if its an author span.
+        if(spanclass == authorClass){ // if the author span is the same as the same as the line primary author
+          $(this).style("border-bottom", "0px solid #000", "important"); // removes border bottom
+        }
+      }
+    });
     
     var nth = lineNumber +1; // nth begins count at 1
     var prev = lineNumber -1;
-    var $authorContainer = $('iframe[name="ace_outer"]').contents().find('#sidedivinner').find('div:nth-child('+nth+')');
-
+    var $authorContainer = $('iframe[name="ace_outer"]').contents().find('#sidedivinner').find('div:nth-child('+nth+')'); // get the left side author contains
     if($(this).text().length == 0){
        // line is blank, we should nuke the line number
        $authorContainer.html("");
@@ -94,7 +103,7 @@ function authorViewUpdate(){
     }
     lineNumber++; // seems weird to do this here but actually makes sense
 
-  });
+  }); // end each line
 }
 
 function fadeColor(colorCSS, fadeFrac){
@@ -172,11 +181,57 @@ function authorNameAndColorFromAuthorId(authorId){
     return authorObj || {name: "Unknown Author", color: "#fff"};
 }
 
-Object.size = function(obj) { // http://stackoverflow.com/questions/5223/length-of-javascript-object-ie-associative-array
-    var size = 0, key;
-    for (key in obj) {
-        if (obj.hasOwnProperty(key)) size++;
+// For those who need them (< IE 9), add support for CSS functions
+var isStyleFuncSupported = CSSStyleDeclaration.prototype.getPropertyValue != null;
+if (!isStyleFuncSupported) {
+    CSSStyleDeclaration.prototype.getPropertyValue = function(a) {
+        return this.getAttribute(a);
+    };
+    CSSStyleDeclaration.prototype.setProperty = function(styleName, value, priority) {
+        this.setAttribute(styleName,value);
+        var priority = typeof priority != 'undefined' ? priority : '';
+        if (priority != '') {
+            // Add priority manually
+            var rule = new RegExp(RegExp.escape(styleName) + '\\s*:\\s*' + RegExp.escape(value) + '(\\s*;)?', 'gmi');
+            this.cssText = this.cssText.replace(rule, styleName + ': ' + value + ' !' + priority + ';');
+        } 
     }
-    return size;
-};
+    CSSStyleDeclaration.prototype.removeProperty = function(a) {
+        return this.removeAttribute(a);
+    }
+    CSSStyleDeclaration.prototype.getPropertyPriority = function(styleName) {
+        var rule = new RegExp(RegExp.escape(styleName) + '\\s*:\\s*[^\\s]*\\s*!important(\\s*;)?', 'gmi');
+        return rule.test(this.cssText) ? 'important' : '';
+    }
+}
 
+// Escape regex chars with \
+RegExp.escape = function(text) {
+    return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
+}
+
+// The style function
+jQuery.fn.style = function(styleName, value, priority) {
+    // DOM node
+    var node = this.get(0);
+    // Ensure we have a DOM node 
+    if (typeof node == 'undefined') {
+        return;
+    }
+    // CSSStyleDeclaration
+    var style = this.get(0).style;
+    // Getter/Setter
+    if (typeof styleName != 'undefined') {
+        if (typeof value != 'undefined') {
+            // Set style property
+            var priority = typeof priority != 'undefined' ? priority : '';
+            style.setProperty(styleName, value, priority);
+        } else {
+            // Get style property
+            return style.getPropertyValue(styleName);
+        }
+    } else {
+        // Get CSSStyleDeclaration
+        return style;
+    }
+}
