@@ -76,18 +76,15 @@ function authorViewUpdate(){
     if(authorClass){ // If ther eis an authorclass for this line
       // Write authorName to the sidediv..
       // get previous authorContainer text
-      var prevAuthorName = authors[prev];
-      console.log("previous author" , prevAuthorName);
+      var prevAuthorName = authors[prev]; // get the previous author class
       var authorId = authorIdFromClass(authorClass); // Get the authorId
       if(!authorId){ return; } // Default text isn't shown
       var authorNameAndColor = authorNameAndColorFromAuthorId(authorId); // Get the authorName And Color
       $authorContainer.css({"border-right":"solid 5px "+authorNameAndColor.color, "padding-right":"5px"});
-      console.log(lineNumber, "new author = ", authorNameAndColor.name, "prev author", prevAuthorName);
       if(authorClass !== prevAuthorName){ // if its a new author name and not the same one as the line above.
-        $('iframe[name="ace_outer"]').contents().find('#sidedivinner').find('div:nth-child('+nth+')').html(authorNameAndColor.name)
-        console.log(prevAuthorName);
+        $('iframe[name="ace_outer"]').contents().find('#sidedivinner').find('div:nth-child('+nth+')').html(authorNameAndColor.name); // write the author name
       }else{
-        $authorContainer.html("");
+        $authorContainer.html(""); // else leave it blank
       }
     }
     lineNumber++; // seems weird to do this here but actually makes sense
