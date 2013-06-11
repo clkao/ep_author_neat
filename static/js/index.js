@@ -30,7 +30,10 @@ function authorViewUpdate(){
   var lineNumber = 0;
   // below is VERY slow
   var divs = $('iframe[name="ace_outer"]').contents().find('iframe').contents().find("#innerdocbody").children("div");
-  $('iframe[name="ace_outer"]').contents().find('#sidediv').css("padding-right","0px");
+  $('iframe[name="ace_outer"]').contents().find('#sidediv').css({"padding-right":"0px"});
+  $('iframe[name="ace_outer"]').contents().find('#sidedivinner').css({"max-width":"180px", "overflow":"hidden"});
+  $('iframe[name="ace_outer"]').contents().find('#sidedivinner > div').css({"text-overflow":"ellipsis", "overflow":"hidden"});
+
   var authors = {};
 
   $(divs).each(function(){ // each line
@@ -83,9 +86,11 @@ function authorViewUpdate(){
       $authorContainer.css({"border-right":"solid 5px "+authorNameAndColor.color, "padding-right":"5px"});
       if(authorClass !== prevAuthorName){ // if its a new author name and not the same one as the line above.
         $('iframe[name="ace_outer"]').contents().find('#sidedivinner').find('div:nth-child('+nth+')').html(authorNameAndColor.name); // write the author name
-      }else{
+      }
+      else{
         $authorContainer.html(""); // else leave it blank
       }
+      $('iframe[name="ace_outer"]').contents().find('#sidedivinner').find('div:nth-child('+nth+')').attr("title", "Line number "+nth); // add a hover for line numbers
     }
     lineNumber++; // seems weird to do this here but actually makes sense
 
@@ -99,6 +104,7 @@ function fadeColor(colorCSS, fadeFrac){
   return colorutils.triple2css(color);
 }
 out$.aceSetAuthorStyle = aceSetAuthorStyle;
+
 function aceSetAuthorStyle(name, context){
   var dynamicCSS, parentDynamicCSS, info, author, authorSelector, color, authorStyle, parentAuthorStyle, anchorStyle;
   dynamicCSS = context.dynamicCSS, parentDynamicCSS = context.parentDynamicCSS, info = context.info, author = context.author, authorSelector = context.authorSelector;
