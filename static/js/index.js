@@ -32,44 +32,61 @@ function authorViewUpdate(){
   var divs = $('iframe[name="ace_outer"]').contents().find('iframe').contents().find("#innerdocbody").children("div");
   $('iframe[name="ace_outer"]').contents().find('#sidediv').css("padding-right","0px");
   var prevAuthorName = "";
+  var authors = {};
+
   $(divs).each(function(){ // each line
-    var lineAuthor = {};
+    if(!$(this).text().length > 0) return; // return nothign if the line is blank :)
+    var authorClass = "";
+    authors.line = {};
+    authors.line.number = lineNumber;
     $(this).children("span").each(function(){ // each span
       var spanclass = $(this).attr("class");
       if(spanclass.indexOf("author") !== -1){ // if its an author span.
         var length = $(this).text().length; // the length of the span
-        var newCount = length + (lineAuthor[spanclass] || 0); // this is broken.
-        lineAuthor.name = spanclass;
-        lineAuthor.count = newCount;
-      }
-      if(Object.size(lineAuthor) > 1){ // multiple authors
-        // TODO sort lineAuthor by value
+        if(authors.line[spanclass]){
+          authors.line[spanclass] = authors.line[spanclass] + length; // append the length to existing chars
+        }else{
+          authors.line[spanclass] = length; // set a first value of length
+        }
       }
     }); // end each span
-    var authorClass = lineAuthor.name; // again see above this is broken
-    lineNumber++; // seems weird to do this here but actually makes sense
+    
+    // get the author with the most chars
+    var mPA = 0; // mPA = most prolific author
+    $.each(authors.line, function(index, value){ // each author of this div
+      if(index != "number"){ // if its not the line number
+        if ( value > mPA ){ // if the value of the number of chars is greater than the old char
+          mPA = value; // Set the new baseline #
+          authorClass = index; // set the line Author :)
+        }
+      }
+    });
+
+    var nth = lineNumber +1;
     if(authorClass){ // If ther eis an authorclass for this line
       // Write authorName to the sidediv..
       // get previous authorContainer text
-      prevAuthorName = $('iframe[name="ace_outer"]').contents().find('#sidedivinner').find('div:nth-child('+lineNumber+')').text();
+      prevAuthorName = $('iframe[name="ace_outer"]').contents().find('#sidedivinner').find('div:nth-child('+nth+')').text();
 //      console.log("prevAuthorName", prevAuthorName);
 
-      var $authorContainer = $('iframe[name="ace_outer"]').contents().find('#sidedivinner').find('div:nth-child('+lineNumber+')');
+      var $authorContainer = $('iframe[name="ace_outer"]').contents().find('#sidedivinner').find('div:nth-child('+nth+')');
       var authorId = authorIdFromClass(authorClass); // Get the authorId
 //      console.log("authorId", authorId)
       if(!authorId){ return; } // Default text isn't shown
       var authorNameAndColor = authorNameAndColorFromAuthorId(authorId); // Get the authorName And Color
 //      console.log(authorNameAndColor.name, authorNameAndColor.color);
       // $('iframe[name="ace_outer"]').contents().find('#sidedivinner').css("border-right","solid 5px "+authorNameAndColor.color);
-      console.log("applying css", lineNumber, $authorContainer);
+//      console.log("applying css", lineNumber, $authorContainer);
       $authorContainer.css({"border-right":"solid 5px "+authorNameAndColor.color, "padding-right":"5px"});
-      console.log(prevAuthorName);
-      if(authorNameAndColor.name !== prevAuthorName){ // if its a new author name and not the same one as the line above.
+//      console.log(prevAuthorName);
+//      if(authorNameAndColor.name !== prevAuthorName){ // if its a new author name and not the same one as the line above.
         $authorContainer.html(authorNameAndColor.name);
-      }else{
-        $authorContainer.html("");
-      }
+//      }else{
+//        $authorContainer.html("");
+//      }
     }
+    lineNumber++; // seems weird to do this here but actually makes sense
+
   });
 }
 
