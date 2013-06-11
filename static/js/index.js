@@ -36,7 +36,6 @@ function authorViewUpdate(){
     var lineAuthor = {};
     $(this).children("span").each(function(){ // each span
       var spanclass = $(this).attr("class");
-console.log("sc", spanclass, $(this).text());
       if(spanclass.indexOf("author") !== -1){ // if its an author span.
         var length = $(this).text().length; // the length of the span
         var newCount = length + (lineAuthor[spanclass] || 0); // this is broken.
@@ -48,21 +47,21 @@ console.log("sc", spanclass, $(this).text());
       }
     }); // end each span
     var authorClass = lineAuthor.name; // again see above this is broken
+    lineNumber++; // seems weird to do this here but actually makes sense
     if(authorClass){ // If ther eis an authorclass for this line
       // Write authorName to the sidediv..
-console.log("have authorclass", lineNumber);
       // get previous authorContainer text
       prevAuthorName = $('iframe[name="ace_outer"]').contents().find('#sidedivinner').find('div:nth-child('+lineNumber+')').text();
-      console.log("prevAuthorName", prevAuthorName);
+//      console.log("prevAuthorName", prevAuthorName);
 
-      lineNumber++; // seems weird to do this here but actually makes sense
       var $authorContainer = $('iframe[name="ace_outer"]').contents().find('#sidedivinner').find('div:nth-child('+lineNumber+')');
       var authorId = authorIdFromClass(authorClass); // Get the authorId
+//      console.log("authorId", authorId)
       if(!authorId){ return; } // Default text isn't shown
       var authorNameAndColor = authorNameAndColorFromAuthorId(authorId); // Get the authorName And Color
 //      console.log(authorNameAndColor.name, authorNameAndColor.color);
       // $('iframe[name="ace_outer"]').contents().find('#sidedivinner').css("border-right","solid 5px "+authorNameAndColor.color);
-// console.log("applying css", lineNumber, $authorContainer);
+      console.log("applying css", lineNumber, $authorContainer);
       $authorContainer.css({"border-right":"solid 5px "+authorNameAndColor.color, "padding-right":"5px"});
       console.log(prevAuthorName);
       if(authorNameAndColor.name !== prevAuthorName){ // if its a new author name and not the same one as the line above.
