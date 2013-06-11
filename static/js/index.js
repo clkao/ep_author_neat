@@ -1,14 +1,21 @@
 var out$ = typeof exports != 'undefined' && exports || this;
 
-out$.postAceInit = function (hook_name, args, cb) {
-  setTimeout(function(){ // has to wait for a bit to do this..
-    authorViewUpdate();
-  }, 500);
-}
-
 out$.aceEditEvent = function (hook_name, args, cb) { // on an edit
 
-  if(!args.callstack.docTextChanged){ // has the document text changed?
+  if(args.callstack.type == "setWraps"){ // fired when wraps is fired
+    setTimeout(function(){ // has to wait for a bit to do this..
+      authorViewUpdate();
+    }, 10);
+  }
+
+  if(!args.callstack.docTextChanged || (args.callstack.type != "applyChangesToBase")){ // has the document text changed?
+//  if(!args.callstack.docTextChanged){ // has the document text changed?
+
+  /*** Note
+     If you uncomment the above line and comment out the line above it the authorcolors
+     work properly but it slows down as it fires on idleWorkTimer events. 
+  ***********/
+
     return false; 
   }else{
     authorViewUpdate();
@@ -17,24 +24,14 @@ out$.aceEditEvent = function (hook_name, args, cb) { // on an edit
 }
 
 function authorViewUpdate(){
-/*
-  Show authors color on line
-    - get all authors on line
-      - get which one has most chars
-        - get that authors authorid
-          - find users color from authorid
-          - add css styling w/ border-left to the parent div
-  Show authors name
-*/
-
   var lineNumber = 0;
-  // below is VERY slow
-  var divs = $('iframe[name="ace_outer"]').contents().find('iframe').contents().find("#innerdocbody").children("div");
-  $('iframe[name="ace_outer"]').contents().find('#sidediv').css({"padding-right":"0px"});
-  $('iframe[name="ace_outer"]').contents().find('#sidedivinner').css({"max-width":"180px", "overflow":"hidden"});
-  $('iframe[name="ace_outer"]').contents().find('#sidedivinner > div').css({"text-overflow":"ellipsis", "overflow":"hidden"});
-
   var authors = {};
+
+  // below can be slow, be mindful
+  var divs = $('iframe[name="ace_outer"]').contents().find('iframe').contents().find("#innerdocbody").children("div"); // get each line
+  $('iframe[name="ace_outer"]').contents().find('#sidediv').css({"padding-right":"0px"}); // no need for padding when we use borders
+  $('iframe[name="ace_outer"]').contents().find('#sidedivinner').css({"max-width":"180px", "overflow":"hidden"}); // set max width to 180
+  $('iframe[name="ace_outer"]').contents().find('#sidedivinner > div').css({"text-overflow":"ellipsis", "overflow":"hidden"}); // stop overflow and use ellipsis
 
   $(divs).each(function(){ // each line
     if($(this).text().length > 0){ // return nothign if the line is blank :)
@@ -71,18 +68,17 @@ function authorViewUpdate(){
       var spanclass = $(this).attr("class");
       if(spanclass.indexOf("author") !== -1){ // if its an author span.
         if(spanclass == authorClass){ // if the author span is the same as the same as the line primary author
-          $(this).style("border-bottom", "0px solid #000", "important"); // removes border bottom
+          $(this).style("border-bottom", "0px solid #000", "important"); // removes border bottom // See Note!
         }
       }
     });
     
     var nth = lineNumber +1; // nth begins count at 1
-    var prev = lineNumber -1;
+    var prev = lineNumber -1; // previous item is always one less than current linenumber
     var $authorContainer = $('iframe[name="ace_outer"]').contents().find('#sidedivinner').find('div:nth-child('+nth+')'); // get the left side author contains
-    if($(this).text().length == 0){
-       // line is blank, we should nuke the line number
-       $authorContainer.html("");
-       $authorContainer.css({"border-right":"solid 0px ", "padding-right":"5px"});
+    if($(this).text().length == 0){ // if the line has no text
+       $authorContainer.html(""); // line is blank, we should nuke the line number
+       $authorContainer.css({"border-right":"solid 0px ", "padding-right":"5px"}); // add some blank padding to keep things neat
     }
 
     if(authorClass){ // If ther eis an authorclass for this line
