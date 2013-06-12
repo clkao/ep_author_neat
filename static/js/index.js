@@ -18,13 +18,14 @@ out$.aceEditEvent = function (hook_name, args, cb) { // on an edit
 
 function authorViewUpdate(node){
   var lineNumber = $(node).index();
+  console.log("lineNumber", lineNumber);
   if(lineNumber == -1){ return false; } // dont process lines we dont know the number of.
   lineNumber = lineNumber +1; // index returns -1 what nth expects
   var prevAuthor = (authorLines[lineNumber] || false);
-  console.log("previous author class was", prevAuthor);
+  // console.log("previous author class was", prevAuthor);
   var authors = {};
   var authorClass = false;
-
+  authorLines[lineNumber] = null;
   if($(node).text().length > 0){ // return nothign if the line is blank :)
     authorLines.line = {};
     authorLines.line.number = lineNumber;
@@ -61,7 +62,7 @@ function authorViewUpdate(node){
     $authorContainer.css({"border-right":"solid 0px ", "padding-right":"5px"}); // add some blank padding to keep things neat
   }
 
-  if(authorClass){ // If ther eis an authorclass for this line
+  if(authorClass){
     $(node).addClass(authorClass); // XXX: remove other old author class
 
     // Write authorName to the sidediv..
@@ -69,10 +70,9 @@ function authorViewUpdate(node){
     var prevLineAuthorClass = authorLines[prev]; // get the previous author class
     var authorId = authorIdFromClass(authorClass); // Get the authorId
     if(!authorId){ return; } // Default text isn't shown
-
     // below throws true but we might need to rewrite anyway so lets do that..
     // console.log(authorClass, prevAuthor);
-
+  
     var authorChanged = false;
     if(authorClass != prevAuthor){ // Has the author changed, if so we need to uipdate the UI anyways..
       authorChanged = true;
@@ -83,25 +83,23 @@ function authorViewUpdate(node){
     $authorContainer = $sidedivinner.find('div:nth-child('+lineNumber+')');
     $authorContainer.css({"border-right":"solid 5px "+authorNameAndColor.color, "padding-right":"5px"});
 
-    // TODO, note we dont rejoin lines that need to be modified
-    // IE if I modify line 15's primary author it isn't reflected on line 16 because we process a line at a time
-    // To fix that we can should do the next & previous line and continue until we hit a true statement above.
-    // Be careful not to introduce endless loops here..
-    
+    // The below logic breaks when you remove chunks of content because the hook only
+    // the plugin only redraws the actual line edited..  WTF!
+    // To fix it we need to do a while loop over the authorLines object
+
     // Does the previous line have the same author?
     var prevLineSameAuthor = false;
     if(authorLines[prev] == authorClass){
-      console.log("set the current line authorname to ''", lineNumber);
-      prevLineSameAuthor = true;
-      // this line shouldn't have any author name.
+//      console.log("set the current line authorname to ''", lineNumber);
+      prevLineSameAuthor = true; // this line shouldn't have any author name.
     }
 
     // Does the next line have the same author?
     if(authorLines[next] == authorClass){
-      console.log("set the next line authorname to ''", lineNumber);
+//      console.log("set the next line authorname to ''", lineNumber);
       $nextAuthorContainer = $sidedivinner.find('div:nth-child('+next+')');
       $nextAuthorContainer.html("");
-      if(!prevLineSameAuthor){
+      if(!prevLineSameAuthor){ // does the previous line have the same author?
         $authorContainer.html(authorNameAndColor.name); // write the author name
       }
     }else{
@@ -112,8 +110,6 @@ function authorViewUpdate(node){
         $authorContainer.html("");
       }
     }
-
-
     $('iframe[name="ace_outer"]').contents().find('#sidedivinner').find('div:nth-child('+lineNumber+')').attr("title", "Line number "+lineNumber); // add a hover for line numbers
   }
 
