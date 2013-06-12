@@ -3,9 +3,10 @@ var out$ = typeof exports != 'undefined' && exports || this;
 var authorLines = {};
 
 out$.acePostWriteDomLineHTML = function(hook_name, args, cb) { // When the DOM is edited
+  // console.log(args);
   setTimeout(function(){
     authorViewUpdate(args.node);
-  }, 100); // avoid pesky race conditions
+  }, 200); // avoid pesky race conditions
 }
 
 out$.aceEditEvent = function (hook_name, args, cb) { // on an edit
