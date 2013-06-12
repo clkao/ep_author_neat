@@ -1,9 +1,11 @@
 var out$ = typeof exports != 'undefined' && exports || this;
 
+var authorLines = {};
+
 out$.acePostWriteDomLineHTML = function(hook_name, args, cb) { // When the DOM is edited
   setTimeout(function(){
     authorViewUpdate(args.node);
-  }, 1); // avoid pesky race conditions
+  }, 100); // avoid pesky race conditions
 }
 
 out$.aceEditEvent = function (hook_name, args, cb) { // on an edit
@@ -18,49 +20,73 @@ function authorViewUpdate(node){
   var lineNumber = $(node).index();
   if(lineNumber == -1){ return false; } // dont process lines we dont know the number of.
   lineNumber = lineNumber +1; // index returns -1 what nth expects
+  var prevAuthor = (authorLines[lineNumber] || false);
+  console.log("previous author class was", prevAuthor);
   var authors = {};
   var authorClass = false;
 
   if($(node).text().length > 0){ // return nothign if the line is blank :)
-    authors.line = {};
-    authors.line.number = lineNumber;
+    authorLines.line = {};
+    authorLines.line.number = lineNumber;
     $(node).children("span").each(function(){ // each span
       var spanclass = $(this).attr("class");
       if(spanclass.indexOf("author") !== -1){ // if its an author span.
         var length = $(this).text().length; // the length of the span
-        if(authors.line[spanclass]){
-          authors.line[spanclass] = authors.line[spanclass] + length; // append the length to existing chars
+        if(authorLines.line[spanclass]){
+          authorLines.line[spanclass] = authorLines.line[spanclass] + length; // append the length to existing chars
         }else{
-          authors.line[spanclass] = length; // set a first value of length
+          authorLines.line[spanclass] = length; // set a first value of length
         }
       }
     }); // end each span
     // get the author with the most chars
     var mPA = 0; // mPA = most prolific author
-    $.each(authors.line, function(index, value){ // each author of this div
+    $.each(authorLines.line, function(index, value){ // each author of this div
       if(index != "number"){ // if its not the line number
         if ( value > mPA ){ // if the value of the number of chars is greater than the old char
           mPA = value; // Set the new baseline #
           authorClass = index; // set the line Author :)
-          authors[lineNumber] = authorClass;
+          authorLines[lineNumber] = authorClass;
         }
       }
     });
+    authorLines.line = null; // set the authorLines.line count value back to nothing
   } // end if the div is blank
 
   var prev = lineNumber -1; // previous item is always one less than current linenumber
+
+
   if($(node).text().length == 0){ // if the line has no text
-     var $authorContainer = $('iframe[name="ace_outer"]').contents().find('#sidedivinner').find('div:nth-child('+lineNumber+')'); // get the left side author contains // VERY SLOW!
-     $authorContainer.html(""); // line is blank, we should nuke the line number
-     $authorContainer.css({"border-right":"solid 0px ", "padding-right":"5px"}); // add some blank padding to keep things neat
+/*
+    var $authorContainer = $('iframe[name="ace_outer"]').contents().find('#sidedivinner').find('div:nth-child('+lineNumber+')'); // get the left side author contains // VERY SLOW!
+    $authorContainer.html(""); // line is blank, we should nuke the line number
+    $authorContainer.css({"border-right":"solid 0px ", "padding-right":"5px"}); // add some blank padding to keep things neat
+*/
   }
+
   if(authorClass){ // If ther eis an authorclass for this line
     $(node).addClass(authorClass); // XXX: remove other old author class
+
     // Write authorName to the sidediv..
     // get previous authorContainer text
-    // var prevAuthorName = authors[prev]; // get the previous author class
+    var prevLineAuthorClass = authorLines[prev]; // get the previous author class
     var authorId = authorIdFromClass(authorClass); // Get the authorId
     if(!authorId){ return; } // Default text isn't shown
+
+    // below throws true but we might need to rewrite anyway so lets do that..
+    // console.log(authorClass, prevAuthor);
+
+    if(authorClass != prevAuthor){ // Has the author changed, if so we need to uipdate the UI anyways..
+      var authorChanged = true;
+    }
+
+    if((authorClass == prevLineAuthorClass) && (!authorChanged)){ return ;} // much faster than previous approach
+
+    // TODO, note we dont rejoin lines that need to be modified
+    // IE if I modify line 15's primary author it isn't reflected on line 16 because we process a line at a time
+    // To fix that we can should do the next & previous line and continue until we hit a true statement above.
+    // Be careful not to introduce endless loops here..
+
     var authorNameAndColor = authorNameAndColorFromAuthorId(authorId); // Get the authorName And Color
     var $sidedivinner = $('iframe[name="ace_outer"]').contents().find('#sidedivinner');
     $authorContainer = $sidedivinner.find('div:nth-child('+lineNumber+')');
@@ -68,6 +94,7 @@ function authorViewUpdate(node){
     $authorContainer.html(authorNameAndColor.name); // write the author name
     $('iframe[name="ace_outer"]').contents().find('#sidedivinner').find('div:nth-child('+lineNumber+')').attr("title", "Line number "+lineNumber); // add a hover for line numbers
   }
+
 }
 
 function fadeColor(colorCSS, fadeFrac){
