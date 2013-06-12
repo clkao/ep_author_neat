@@ -76,22 +76,27 @@ function authorViewUpdate(node){
     // below throws true but we might need to rewrite anyway so lets do that..
     // console.log(authorClass, prevAuthor);
 
+    var authorChanged = false;
     if(authorClass != prevAuthor){ // Has the author changed, if so we need to uipdate the UI anyways..
-      var authorChanged = true;
+      authorChanged = true;
     }
 
-    if((authorClass == prevLineAuthorClass) && (!authorChanged)){ return ;} // much faster than previous approach
+    var authorNameAndColor = authorNameAndColorFromAuthorId(authorId); // Get the authorName And Color
+    var $sidedivinner = $('iframe[name="ace_outer"]').contents().find('#sidedivinner');
+    $authorContainer = $sidedivinner.find('div:nth-child('+lineNumber+')');
+    $authorContainer.css({"border-right":"solid 5px "+authorNameAndColor.color, "padding-right":"5px"});
+
+    // If the authorClass is not the same as the previous line author class and the author had not changed
+    if((authorClass != prevLineAuthorClass) && (!authorChanged)){
+      $authorContainer.html(authorNameAndColor.name); // write the author name
+    }
 
     // TODO, note we dont rejoin lines that need to be modified
     // IE if I modify line 15's primary author it isn't reflected on line 16 because we process a line at a time
     // To fix that we can should do the next & previous line and continue until we hit a true statement above.
     // Be careful not to introduce endless loops here..
 
-    var authorNameAndColor = authorNameAndColorFromAuthorId(authorId); // Get the authorName And Color
-    var $sidedivinner = $('iframe[name="ace_outer"]').contents().find('#sidedivinner');
-    $authorContainer = $sidedivinner.find('div:nth-child('+lineNumber+')');
-    $authorContainer.css({"border-right":"solid 5px "+authorNameAndColor.color, "padding-right":"5px"});
-    $authorContainer.html(authorNameAndColor.name); // write the author name
+
     $('iframe[name="ace_outer"]').contents().find('#sidedivinner').find('div:nth-child('+lineNumber+')').attr("title", "Line number "+lineNumber); // add a hover for line numbers
   }
 
