@@ -54,14 +54,11 @@ function authorViewUpdate(node){
   } // end if the div is blank
 
   var prev = lineNumber -1; // previous item is always one less than current linenumber
-
-
+  var next = lineNumber +1;
   if($(node).text().length == 0){ // if the line has no text
-/*
     var $authorContainer = $('iframe[name="ace_outer"]').contents().find('#sidedivinner').find('div:nth-child('+lineNumber+')'); // get the left side author contains // VERY SLOW!
     $authorContainer.html(""); // line is blank, we should nuke the line number
     $authorContainer.css({"border-right":"solid 0px ", "padding-right":"5px"}); // add some blank padding to keep things neat
-*/
   }
 
   if(authorClass){ // If ther eis an authorclass for this line
@@ -86,15 +83,35 @@ function authorViewUpdate(node){
     $authorContainer = $sidedivinner.find('div:nth-child('+lineNumber+')');
     $authorContainer.css({"border-right":"solid 5px "+authorNameAndColor.color, "padding-right":"5px"});
 
-    // If the authorClass is not the same as the previous line author class and the author had not changed
-    if((authorClass != prevLineAuthorClass) && (!authorChanged)){
-      $authorContainer.html(authorNameAndColor.name); // write the author name
-    }
-
     // TODO, note we dont rejoin lines that need to be modified
     // IE if I modify line 15's primary author it isn't reflected on line 16 because we process a line at a time
     // To fix that we can should do the next & previous line and continue until we hit a true statement above.
     // Be careful not to introduce endless loops here..
+    
+    // Does the previous line have the same author?
+    var prevLineSameAuthor = false;
+    if(authorLines[prev] == authorClass){
+      console.log("set the current line authorname to ''", lineNumber);
+      prevLineSameAuthor = true;
+      // this line shouldn't have any author name.
+    }
+
+    // Does the next line have the same author?
+    if(authorLines[next] == authorClass){
+      console.log("set the next line authorname to ''", lineNumber);
+      $nextAuthorContainer = $sidedivinner.find('div:nth-child('+next+')');
+      $nextAuthorContainer.html("");
+      if(!prevLineSameAuthor){
+        $authorContainer.html(authorNameAndColor.name); // write the author name
+      }
+    }else{
+      // If the authorClass is not the same as the previous line author class and the author had not changed
+      if((authorClass != prevLineAuthorClass) && (!authorChanged)){
+        $authorContainer.html(authorNameAndColor.name); // write the author name
+      }else{
+        $authorContainer.html("");
+      }
+    }
 
 
     $('iframe[name="ace_outer"]').contents().find('#sidedivinner').find('div:nth-child('+lineNumber+')').attr("title", "Line number "+lineNumber); // add a hover for line numbers
