@@ -1,105 +1,73 @@
 var out$ = typeof exports != 'undefined' && exports || this;
 
-out$.aceEditEvent = function (hook_name, args, cb) { // on an edit
-
-  if(args.callstack.type == "setWraps"){ // fired when wraps is fired
-    setTimeout(function(){ // has to wait for a bit to do this..
-      authorViewUpdate();
-    }, 10);
-  }
-
-  if(!args.callstack.docTextChanged || (args.callstack.type != "applyChangesToBase")){ // has the document text changed?
-//  if(!args.callstack.docTextChanged){ // has the document text changed?
-
-  /*** Note
-     If you uncomment the above line and comment out the line above it the authorcolors
-     work properly but it slows down as it fires on idleWorkTimer events. 
-  ***********/
-
-    return false; 
-  }else{
-    authorViewUpdate();
-  }
-
+out$.acePostWriteDomLineHTML = function(hook_name, args, cb) { // When the DOM is edited
+  setTimeout(function(){
+    authorViewUpdate(args.node);
+  }, 1); // avoid pesky race conditions
 }
 
-function authorViewUpdate(){
-  var lineNumber = 0;
+out$.aceEditEvent = function (hook_name, args, cb) { // on an edit
+  if(args.callstack.type == "setWraps"){ // fired when wraps is fired
+    $('iframe[name="ace_outer"]').contents().find('#sidediv').css({"padding-right":"0px"}); // no need for padding when we use borders
+    $('iframe[name="ace_outer"]').contents().find('#sidedivinner').css({"max-width":"180px", "overflow":"hidden"}); // set max width to 180
+    $('iframe[name="ace_outer"]').contents().find('#sidedivinner > div').css({"text-overflow":"ellipsis", "overflow":"hidden"}); // stop overflow and use ellipsis
+  }
+}
+
+function authorViewUpdate(node){
+  var lineNumber = $(node).index();
+  if(lineNumber == -1){ return false; } // dont process lines we dont know the number of.
+  lineNumber = lineNumber +1; // index returns -1 what nth expects
   var authors = {};
+  var authorClass = false;
 
-  // below can be slow, be mindful
-  var divs = $('iframe[name="ace_outer"]').contents().find('iframe').contents().find("#innerdocbody").children("div"); // get each line
-  $('iframe[name="ace_outer"]').contents().find('#sidediv').css({"padding-right":"0px"}); // no need for padding when we use borders
-  $('iframe[name="ace_outer"]').contents().find('#sidedivinner').css({"max-width":"180px", "overflow":"hidden"}); // set max width to 180
-  $('iframe[name="ace_outer"]').contents().find('#sidedivinner > div').css({"text-overflow":"ellipsis", "overflow":"hidden"}); // stop overflow and use ellipsis
-
-  $(divs).each(function(){ // each line
-    if($(this).text().length > 0){ // return nothign if the line is blank :)
-      var authorClass = "";
-      authors.line = {};
-      authors.line.number = lineNumber;
-      $(this).children("span").each(function(){ // each span
-        var spanclass = $(this).attr("class");
-        if(spanclass.indexOf("author") !== -1){ // if its an author span.
-          var length = $(this).text().length; // the length of the span
-          if(authors.line[spanclass]){
-            authors.line[spanclass] = authors.line[spanclass] + length; // append the length to existing chars
-          }else{
-            authors.line[spanclass] = length; // set a first value of length
-          }
-        }
-      }); // end each span
-      
-      // get the author with the most chars
-      var mPA = 0; // mPA = most prolific author
-      $.each(authors.line, function(index, value){ // each author of this div
-        if(index != "number"){ // if its not the line number
-          if ( value > mPA ){ // if the value of the number of chars is greater than the old char
-            mPA = value; // Set the new baseline #
-            authorClass = index; // set the line Author :)
-            authors[lineNumber] = authorClass;
-          }
-        }
-      });
-    }
-
-    // remove the primary authorColor underline
-    $(this).children("span").each(function(){ // each span
+  if($(node).text().length > 0){ // return nothign if the line is blank :)
+    authors.line = {};
+    authors.line.number = lineNumber;
+    $(node).children("span").each(function(){ // each span
       var spanclass = $(this).attr("class");
       if(spanclass.indexOf("author") !== -1){ // if its an author span.
-        if(spanclass == authorClass){ // if the author span is the same as the same as the line primary author
-          $(this).style("border-bottom", "0px solid #000", "important"); // removes border bottom // See Note!
+        var length = $(this).text().length; // the length of the span
+        if(authors.line[spanclass]){
+          authors.line[spanclass] = authors.line[spanclass] + length; // append the length to existing chars
+        }else{
+          authors.line[spanclass] = length; // set a first value of length
+        }
+      }
+    }); // end each span
+    // get the author with the most chars
+    var mPA = 0; // mPA = most prolific author
+    $.each(authors.line, function(index, value){ // each author of this div
+      if(index != "number"){ // if its not the line number
+        if ( value > mPA ){ // if the value of the number of chars is greater than the old char
+          mPA = value; // Set the new baseline #
+          authorClass = index; // set the line Author :)
+          authors[lineNumber] = authorClass;
         }
       }
     });
-    
-    var nth = lineNumber +1; // nth begins count at 1
-    var prev = lineNumber -1; // previous item is always one less than current linenumber
-    var $authorContainer = $('iframe[name="ace_outer"]').contents().find('#sidedivinner').find('div:nth-child('+nth+')'); // get the left side author contains
-    if($(this).text().length == 0){ // if the line has no text
-       $authorContainer.html(""); // line is blank, we should nuke the line number
-       $authorContainer.css({"border-right":"solid 0px ", "padding-right":"5px"}); // add some blank padding to keep things neat
-    }
+  } // end if the div is blank
 
-    if(authorClass){ // If ther eis an authorclass for this line
-      // Write authorName to the sidediv..
-      // get previous authorContainer text
-      var prevAuthorName = authors[prev]; // get the previous author class
-      var authorId = authorIdFromClass(authorClass); // Get the authorId
-      if(!authorId){ return; } // Default text isn't shown
-      var authorNameAndColor = authorNameAndColorFromAuthorId(authorId); // Get the authorName And Color
-      $authorContainer.css({"border-right":"solid 5px "+authorNameAndColor.color, "padding-right":"5px"});
-      if(authorClass !== prevAuthorName){ // if its a new author name and not the same one as the line above.
-        $('iframe[name="ace_outer"]').contents().find('#sidedivinner').find('div:nth-child('+nth+')').html(authorNameAndColor.name); // write the author name
-      }
-      else{
-        $authorContainer.html(""); // else leave it blank
-      }
-      $('iframe[name="ace_outer"]').contents().find('#sidedivinner').find('div:nth-child('+nth+')').attr("title", "Line number "+nth); // add a hover for line numbers
-    }
-    lineNumber++; // seems weird to do this here but actually makes sense
-
-  }); // end each line
+  var prev = lineNumber -1; // previous item is always one less than current linenumber
+  if($(node).text().length == 0){ // if the line has no text
+     var $authorContainer = $('iframe[name="ace_outer"]').contents().find('#sidedivinner').find('div:nth-child('+lineNumber+')'); // get the left side author contains // VERY SLOW!
+     $authorContainer.html(""); // line is blank, we should nuke the line number
+     $authorContainer.css({"border-right":"solid 0px ", "padding-right":"5px"}); // add some blank padding to keep things neat
+  }
+  if(authorClass){ // If ther eis an authorclass for this line
+    $(node).addClass(authorClass); // XXX: remove other old author class
+    // Write authorName to the sidediv..
+    // get previous authorContainer text
+    // var prevAuthorName = authors[prev]; // get the previous author class
+    var authorId = authorIdFromClass(authorClass); // Get the authorId
+    if(!authorId){ return; } // Default text isn't shown
+    var authorNameAndColor = authorNameAndColorFromAuthorId(authorId); // Get the authorName And Color
+    var $sidedivinner = $('iframe[name="ace_outer"]').contents().find('#sidedivinner');
+    $authorContainer = $sidedivinner.find('div:nth-child('+lineNumber+')');
+    $authorContainer.css({"border-right":"solid 5px "+authorNameAndColor.color, "padding-right":"5px"});
+    $authorContainer.html(authorNameAndColor.name); // write the author name
+    $('iframe[name="ace_outer"]').contents().find('#sidedivinner').find('div:nth-child('+lineNumber+')').attr("title", "Line number "+lineNumber); // add a hover for line numbers
+  }
 }
 
 function fadeColor(colorCSS, fadeFrac){
@@ -110,6 +78,16 @@ function fadeColor(colorCSS, fadeFrac){
 }
 out$.aceSetAuthorStyle = aceSetAuthorStyle;
 
+function getAuthorClassName(author)
+{
+  return "author-" + author.replace(/[^a-y0-9]/g, function(c)
+  {
+    if (c == ".") return "-";
+    return 'z' + c.charCodeAt(0) + 'z';
+  });
+}
+
+
 function aceSetAuthorStyle(name, context){
   var dynamicCSS, parentDynamicCSS, info, author, authorSelector, color, authorStyle, parentAuthorStyle, anchorStyle;
   dynamicCSS = context.dynamicCSS, parentDynamicCSS = context.parentDynamicCSS, info = context.info, author = context.author, authorSelector = context.authorSelector;
@@ -117,9 +95,13 @@ function aceSetAuthorStyle(name, context){
     if (!(color = info.bgcolor)) {
       return 1;
     }
+    authorClass = getAuthorClassName(author);
+    authorSelector = ".authorColors span."+authorClass;
     authorStyle = dynamicCSS.selectorStyle(authorSelector);
+    primaryAuthorStyle = dynamicCSS.selectorStyle(".authorColors ."+authorClass+" "+"span."+authorClass);
     parentAuthorStyle = parentDynamicCSS.selectorStyle(authorSelector);
     anchorStyle = dynamicCSS.selectorStyle(authorSelector + ' > a');
+    primaryAuthorStyle.borderBottom = '0px';
     authorStyle.borderBottom = '2px solid ' + color;
     parentAuthorStyle.borderBottom = '2px solid ' + color;
   } else {
@@ -206,28 +188,3 @@ RegExp.escape = function(text) {
     return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
 }
 
-// The style function
-jQuery.fn.style = function(styleName, value, priority) {
-    // DOM node
-    var node = this.get(0);
-    // Ensure we have a DOM node 
-    if (typeof node == 'undefined') {
-        return;
-    }
-    // CSSStyleDeclaration
-    var style = this.get(0).style;
-    // Getter/Setter
-    if (typeof styleName != 'undefined') {
-        if (typeof value != 'undefined') {
-            // Set style property
-            var priority = typeof priority != 'undefined' ? priority : '';
-            style.setProperty(styleName, value, priority);
-        } else {
-            // Get style property
-            return style.getPropertyValue(styleName);
-        }
-    } else {
-        // Get CSSStyleDeclaration
-        return style;
-    }
-}
