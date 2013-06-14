@@ -58,7 +58,7 @@ authorViewUpdate = (node) ->
   # add some blank padding to keep things neat
   # if the line has no text
   if authorClass
-    $node .addClass authorClass
+    $node .addClass "primary-#authorClass"
     # XXX: remove other old author class
     # Write authorName to the sidediv..
     # get previous authorContainer text
@@ -74,7 +74,7 @@ authorViewUpdate = (node) ->
     # Get the authorName And Color
     $sidedivinner = $ 'iframe[name="ace_outer"]' .contents!find '#sidedivinner'
     # XXX use dynamic css and just set class
-    $authorContainer = $sidedivinner.find "div:nth-child(#lineNumber)" .addClass authorClass
+    $authorContainer = $sidedivinner.find "div:nth-child(#lineNumber)" .addClass "primary-#authorClass"
     # The below logic breaks when you remove chunks of content because the hook only
     # the plugin only redraws the actual line edited..  WTF!
     # To fix it we need to do a while loop over the authorLines object
@@ -119,19 +119,19 @@ export function aceSetAuthorStyle(name, context)
   if info
     return 1 unless color = info.bgcolor
     authorClass = getAuthorClassName author
-    authorSelector = '.authorColors span.' + authorClass
-    authorStyle = dynamicCSS.selectorStyle authorSelector
-    primaryAuthorStyle = dynamicCSS.selectorStyle '.authorColors .' + authorClass + ' ' + 'span.' + authorClass
-    parentAuthorStyle = parentDynamicCSS.selectorStyle authorSelector
-    anchorStyle = dynamicCSS.selectorStyle authorSelector + ' > a'
-    primaryAuthorStyle.borderBottom = '0px'
-    authorStyle.borderBottom = '2px solid ' + color
-    parentAuthorStyle.borderBottom = '2px solid ' + color
-
-    outerDynamicCSS.selectorStyle '#sidedivinner > div.' + authorClass
+    authorSelector = ".authorColors span.#authorClass"
+    # author style
+    dynamicCSS.selectorStyle authorSelector
+      ..border-bottom = "2px solid #color"
+    parentDynamicCSS.selectorStyle authorSelector
+      ..border-bottom = "2px solid #color"
+    # primary author override
+    dynamicCSS.selectorStyle ".authorColors .primary-#authorClass .#authorClass"
+      ..border-bottom = '0px'
+    # primary author style on left
+    outerDynamicCSS.selectorStyle "\#sidedivinner > div.primary-#authorClass"
       ..border-right = "solid 5px #{color}"
       ..padding-right = '5px'
-
 
   else
     dynamicCSS.removeSelectorStyle authorSelector
