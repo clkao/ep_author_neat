@@ -2,6 +2,11 @@
 author:
   name: ['Chia-liang Kao']
   email: 'clkao@clkao.org'
+contributors: [
+  name: "John McLear",
+  email: "john@mclear.co.uk",
+  url: "http://mclear.co.uk"
+]
 name: 'ep_author_neat'
 description: 'Neat author display for etherpad-lite'
 version: '0.0.31'
