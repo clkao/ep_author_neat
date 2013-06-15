@@ -1,6 +1,33 @@
 var authorViewUpdate, fadeColor, getAuthorClassName, authorIdFromClass, authorNameAndColorFromAuthorId, authorLines, isStyleFuncSupported, out$ = typeof exports != 'undefined' && exports || this;
+function derivePrimaryAuthor($node){
+  var byAuthor, mPA, authorClass, author, value;
+  byAuthor = {};
+  $node.children('span').each(function(){
+    var $this, i$, ref$, len$, spanclass, length, results$ = [];
+    $this = $(this);
+    for (i$ = 0, len$ = (ref$ = $this.attr('class').split(' ')).length; i$ < len$; ++i$) {
+      spanclass = ref$[i$];
+      if (/^author/.exec(spanclass)) {
+        length = $this.text().length;
+        byAuthor[spanclass] == null && (byAuthor[spanclass] = 0);
+        results$.push(byAuthor[spanclass] += length);
+      }
+    }
+    return results$;
+  });
+  mPA = 0;
+  authorClass = null;
+  for (author in byAuthor) {
+    value = byAuthor[author];
+    if (value > mPA) {
+      mPA = value;
+      authorClass = author;
+    }
+  }
+  return authorClass;
+}
 authorViewUpdate = function(node){
-  var $node, lineNumber, prevAuthor, authors, authorClass, mPA, prev, next, x$, $authorContainer, prevLineAuthorClass, authorId, authorChanged, authorNameAndColor, $sidedivinner, prevLineSameAuthor, y$, $nextAuthorContainer;
+  var $node, lineNumber, prevAuthor, authors, authorClass, prev, next, x$, $authorContainer, prevLineAuthorClass, authorId, authorChanged, authorNameAndColor, $sidedivinner, prevLineSameAuthor, y$, $nextAuthorContainer;
   $node = $(node);
   lineNumber = $node.index();
   if (lineNumber === -1) {
@@ -12,31 +39,7 @@ authorViewUpdate = function(node){
   authorClass = false;
   authorLines[lineNumber] = null;
   if ($node.text().length > 0) {
-    authorLines.line = {};
-    authorLines.line.number = lineNumber;
-    $node.children('span').each(function(){
-      var spanclass, length;
-      spanclass = $(this).attr('class');
-      if (spanclass.indexOf('author') !== -1) {
-        length = $(this).text().length;
-        if (authorLines.line[spanclass]) {
-          return authorLines.line[spanclass] = authorLines.line[spanclass] + length;
-        } else {
-          return authorLines.line[spanclass] = length;
-        }
-      }
-    });
-    mPA = 0;
-    $.each(authorLines.line, function(index, value){
-      if (!(index === 'number')) {
-        if (value > mPA) {
-          mPA = value;
-          authorClass = index;
-          return authorLines[lineNumber] = authorClass;
-        }
-      }
-    });
-    authorLines.line = null;
+    authorClass = authorLines[lineNumber] = derivePrimaryAuthor($node);
   }
   prev = lineNumber - 1;
   next = lineNumber + 1;

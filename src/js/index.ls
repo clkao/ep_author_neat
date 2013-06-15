@@ -1,3 +1,26 @@
+function derive-primary-author($node)
+  by-author = {}
+  $node.children 'span' .each ->
+    $this = $ this
+    for spanclass in $this.attr 'class' .split ' ' when spanclass is /^author/
+      length = $this.text!length
+      # the length of the span
+      by-author[spanclass] ?= 0
+      by-author[spanclass] += length
+  # end each span
+  # get the author with the most chars
+  mPA = 0
+  # mPA = most prolific author
+  # each author of this div
+  authorClass = null
+  for author, value of by-author
+    if value > mPA
+      # Set the new baseline #
+      mPA = value
+      # set the line Author :)
+      authorClass = author
+  return authorClass
+
 authorViewUpdate = (node) ->
   $node = $ node
   lineNumber = $node.index!
@@ -10,39 +33,8 @@ authorViewUpdate = (node) ->
   authors = {}
   authorClass = false
   authorLines[lineNumber] = null
-  # set the authorLines.line count value back to nothing
   if $node.text!length > 0
-    authorLines.line = {}
-    authorLines.line.number = lineNumber
-    $node.children 'span' .each ->
-      spanclass = ($ this).attr 'class'
-      # if its an author span.
-      if (spanclass.indexOf 'author') isnt -1
-        length = ($ this).text!.length
-        # the length of the span
-        if authorLines.line[spanclass]
-          # append the length to existing chars
-          authorLines.line[spanclass] = authorLines.line[spanclass] + length
-        else
-          # set a first value of length
-          authorLines.line[spanclass] = length
-    # end each span
-    # get the author with the most chars
-    mPA = 0
-    # mPA = most prolific author
-    # each author of this div
-    $.each authorLines.line, (index, value) ->
-      # if its not the line number
-      if not (index is 'number')
-        # if the value of the number of chars is greater than the old char
-        if value > mPA
-          # Set the new baseline #
-          mPA := value
-          # set the line Author :)
-          authorClass := index
-          authorLines[lineNumber] = authorClass
-    # set the authorLines.line count value back to nothing
-    authorLines.line = null
+    authorClass = authorLines[lineNumber] = derive-primary-author $node
   # end if the div is blank
   prev = lineNumber - 1
   # previous item is always one less than current linenumber
