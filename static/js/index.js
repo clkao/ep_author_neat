@@ -3,10 +3,11 @@ function derivePrimaryAuthor($node){
   var byAuthor, mPA, authorClass, author, value;
   byAuthor = {};
   $node.children('span').each(function(){
-    var $this, i$, ref$, len$, spanclass, length, results$ = [];
+    var $this, allclass, i$, len$, spanclass, length, results$ = [];
     $this = $(this);
-    for (i$ = 0, len$ = (ref$ = $this.attr('class').split(' ')).length; i$ < len$; ++i$) {
-      spanclass = ref$[i$];
+    allclass = $this.attr('class').split(' ');
+    for (i$ = 0, len$ = allclass.length; i$ < len$; ++i$) {
+      spanclass = allclass[i$];
       if (/^author/.exec(spanclass)) {
         length = $this.text().length;
         byAuthor[spanclass] == null && (byAuthor[spanclass] = 0);
@@ -25,6 +26,28 @@ function derivePrimaryAuthor($node){
     }
   }
   return authorClass;
+}
+function toggleAuthor($node, prefix, authorClass){
+  var hasClass, myClass, i$, ref$, ref1$, len$, c;
+  hasClass = false;
+  myClass = prefix + "-" + authorClass;
+  for (i$ = 0, len$ = (ref$ = (ref1$ = $node.attr('class' != null
+    ? 'class'
+    : split(' '))) != null
+    ? ref1$
+    : []).length; i$ < len$; ++i$) {
+    c = ref$[i$];
+    if (c.indexOf(prefix) === 0) {
+      if (c === myClass) {
+        hasClass = true;
+      } else {
+        $node.removeClass(c);
+      }
+    }
+  }
+  if (!hasClass) {
+    return $node.addClass(myClass);
+  }
 }
 authorViewUpdate = function(node){
   var $node, lineNumber, prevAuthor, authors, authorClass, prev, next, x$, $authorContainer, prevLineAuthorClass, authorId, authorChanged, authorNameAndColor, $sidedivinner, prevLineSameAuthor, y$, $nextAuthorContainer;
@@ -52,7 +75,7 @@ authorViewUpdate = function(node){
     });
   }
   if (authorClass) {
-    $node.addClass("primary-" + authorClass);
+    toggleAuthor($node, "primary", authorClass);
     prevLineAuthorClass = authorLines[prev];
     if (!(authorId = authorIdFromClass(authorClass))) {
       return;
@@ -60,7 +83,8 @@ authorViewUpdate = function(node){
     authorChanged = authorClass !== prevAuthor;
     authorNameAndColor = authorNameAndColorFromAuthorId(authorId);
     $sidedivinner = $('iframe[name="ace_outer"]').contents().find('#sidedivinner');
-    $authorContainer = $sidedivinner.find("div:nth-child(" + lineNumber + ")").addClass("primary-" + authorClass);
+    $authorContainer = $sidedivinner.find("div:nth-child(" + lineNumber + ")");
+    toggleAuthor($authorContainer, "primary", authorClass);
     prevLineSameAuthor = authorLines[prev] === authorClass;
     if (authorLines[next] === authorClass) {
       y$ = $nextAuthorContainer = $sidedivinner.find("div:nth-child(" + next + ")");

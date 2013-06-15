@@ -2,7 +2,8 @@ function derive-primary-author($node)
   by-author = {}
   $node.children 'span' .each ->
     $this = $ this
-    for spanclass in $this.attr 'class' .split ' ' when spanclass is /^author/
+    allclass = $this.attr 'class' .split ' '
+    for spanclass in allclass when spanclass is /^author/
       length = $this.text!length
       # the length of the span
       by-author[spanclass] ?= 0
@@ -20,6 +21,16 @@ function derive-primary-author($node)
       # set the line Author :)
       authorClass = author
   return authorClass
+
+function toggle-author($node, prefix, authorClass)
+  has-class = false
+  my-class = "#prefix-#authorClass"
+  for c in ($node.attr \class ?split ' ') ? [] when c.indexOf(prefix) is 0
+    if c is my-class
+      has-class = true
+    else
+      $node.removeClass c
+  $node.addClass my-class unless has-class
 
 authorViewUpdate = (node) ->
   $node = $ node
@@ -50,7 +61,7 @@ authorViewUpdate = (node) ->
   # add some blank padding to keep things neat
   # if the line has no text
   if authorClass
-    $node .addClass "primary-#authorClass"
+    toggle-author $node, "primary", authorClass
     # XXX: remove other old author class
     # Write authorName to the sidediv..
     # get previous authorContainer text
@@ -66,7 +77,8 @@ authorViewUpdate = (node) ->
     # Get the authorName And Color
     $sidedivinner = $ 'iframe[name="ace_outer"]' .contents!find '#sidedivinner'
     # XXX use dynamic css and just set class
-    $authorContainer = $sidedivinner.find "div:nth-child(#lineNumber)" .addClass "primary-#authorClass"
+    $authorContainer = $sidedivinner.find "div:nth-child(#lineNumber)"
+    toggle-author $authorContainer, "primary", authorClass
     # The below logic breaks when you remove chunks of content because the hook only
     # the plugin only redraws the actual line edited..  WTF!
     # To fix it we need to do a while loop over the authorLines object
