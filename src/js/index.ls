@@ -1,5 +1,3 @@
-hasEnter = false
-
 function derive-primary-author($node)
   by-author = {}
   $node.children 'span' .each ->
@@ -33,37 +31,34 @@ function toggle-author($node, prefix, authorClass)
       has-class = true
     else
       $node.removeClass c
-  $node.addClass my-class unless has-class
+  return false if has-class
+  $node.addClass my-class
+  return true
+
+# enter is pressed and there are likely new lines so should work through them
+hasEnter = false
 
 authorViewUpdate = ($node) ->
-  lineNumber = $node.index!
+  lineNumber = $node.index! + 1
   # dont process lines we dont know the number of.
-  return false if lineNumber is -1
-  ++lineNumber
-  # index returns -1 what nth expects
-  prevAuthor = authorLines[lineNumber] or false
-  # console.log("previous author class was", prevAuthor);
-  authors = {}
+  return false unless lineNumber
+
   authorClass = false
   authorLines[lineNumber] = null
+  $sidedivinner = $ 'iframe[name="ace_outer"]' .contents!find '#sidedivinner'
+  $authorContainer = $sidedivinner.find "div:nth-child(#lineNumber)"
+
   if $node.text!length > 0
     authorClass = authorLines[lineNumber] = derive-primary-author $node
-  # end if the div is blank
-  prev = lineNumber - 1
-  # previous item is always one less than current linenumber
-  next = lineNumber + 1
-  $sidedivinner = $ 'iframe[name="ace_outer"]' .contents!find '#sidedivinner'
+
   if $node.text!length is 0
-    # get the left side author contains // VERY SLOW!
-    $authorContainer = $sidedivinner.find "div:nth-child(#lineNumber)"
-      # line is blank, we should nuke the line number
-      ..addClass "primary-author-none"
-  # add some blank padding to keep things neat
-  # if the line has no text
+    $authorContainer.addClass "primary-author-none"
+
   if authorClass
     toggle-author $node, "primary", authorClass
-    $authorContainer = $sidedivinner.find "div:nth-child(#lineNumber)"
-    toggle-author $authorContainer, "primary", authorClass
+    authorChanged = toggle-author $authorContainer, "primary", authorClass
+    prev = lineNumber - 1
+    next = lineNumber + 1
     # this line shouldn't have any author name.
     # Does the next line have the same author?
     if authorLines[next] is authorClass
@@ -76,7 +71,6 @@ authorViewUpdate = ($node) ->
     else
       # write the author name
       # Has the author changed, if so we need to uipdate the UI anyways..
-      authorChanged = authorClass isnt prevAuthor
       prevLineAuthorClass = authorLines[prev]
       if authorClass isnt prevLineAuthorClass and not authorChanged
         $authorContainer.removeClass \concise

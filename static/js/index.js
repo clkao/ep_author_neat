@@ -1,5 +1,4 @@
 var hasEnter, authorViewUpdate, fadeColor, getAuthorClassName, init, authorNameAndColorFromAuthorId, authorLines, isStyleFuncSupported, out$ = typeof exports != 'undefined' && exports || this;
-hasEnter = false;
 function derivePrimaryAuthor($node){
   var byAuthor, mPA, authorClass, author, value;
   byAuthor = {};
@@ -43,44 +42,42 @@ function toggleAuthor($node, prefix, authorClass){
       }
     }
   }
-  if (!hasClass) {
-    return $node.addClass(myClass);
-  }
-}
-authorViewUpdate = function($node){
-  var lineNumber, prevAuthor, authors, authorClass, prev, next, $sidedivinner, x$, $authorContainer, y$, $nextAuthorContainer, prevLineSameAuthor, authorChanged, prevLineAuthorClass;
-  lineNumber = $node.index();
-  if (lineNumber === -1) {
+  if (hasClass) {
     return false;
   }
-  ++lineNumber;
-  prevAuthor = authorLines[lineNumber] || false;
-  authors = {};
+  $node.addClass(myClass);
+  return true;
+}
+hasEnter = false;
+authorViewUpdate = function($node){
+  var lineNumber, authorClass, $sidedivinner, $authorContainer, authorChanged, prev, next, x$, $nextAuthorContainer, prevLineSameAuthor, prevLineAuthorClass;
+  lineNumber = $node.index() + 1;
+  if (!lineNumber) {
+    return false;
+  }
   authorClass = false;
   authorLines[lineNumber] = null;
+  $sidedivinner = $('iframe[name="ace_outer"]').contents().find('#sidedivinner');
+  $authorContainer = $sidedivinner.find("div:nth-child(" + lineNumber + ")");
   if ($node.text().length > 0) {
     authorClass = authorLines[lineNumber] = derivePrimaryAuthor($node);
   }
-  prev = lineNumber - 1;
-  next = lineNumber + 1;
-  $sidedivinner = $('iframe[name="ace_outer"]').contents().find('#sidedivinner');
   if ($node.text().length === 0) {
-    x$ = $authorContainer = $sidedivinner.find("div:nth-child(" + lineNumber + ")");
-    x$.addClass("primary-author-none");
+    $authorContainer.addClass("primary-author-none");
   }
   if (authorClass) {
     toggleAuthor($node, "primary", authorClass);
-    $authorContainer = $sidedivinner.find("div:nth-child(" + lineNumber + ")");
-    toggleAuthor($authorContainer, "primary", authorClass);
+    authorChanged = toggleAuthor($authorContainer, "primary", authorClass);
+    prev = lineNumber - 1;
+    next = lineNumber + 1;
     if (authorLines[next] === authorClass) {
-      y$ = $nextAuthorContainer = $sidedivinner.find("div:nth-child(" + next + ")");
-      y$.addClass('concise');
+      x$ = $nextAuthorContainer = $sidedivinner.find("div:nth-child(" + next + ")");
+      x$.addClass('concise');
       prevLineSameAuthor = authorLines[prev] === authorClass;
       if (!prevLineSameAuthor) {
         $authorContainer.removeClass('concise');
       }
     } else {
-      authorChanged = authorClass !== prevAuthor;
       prevLineAuthorClass = authorLines[prev];
       if (authorClass !== prevLineAuthorClass && !authorChanged) {
         $authorContainer.removeClass('concise');
