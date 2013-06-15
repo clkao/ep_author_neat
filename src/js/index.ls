@@ -8,17 +8,12 @@ function derive-primary-author($node)
       # the length of the span
       by-author[spanclass] ?= 0
       by-author[spanclass] += length
-  # end each span
-  # get the author with the most chars
-  mPA = 0
   # mPA = most prolific author
-  # each author of this div
+  mPA = 0
   authorClass = null
   for author, value of by-author
     if value > mPA
-      # Set the new baseline #
       mPA = value
-      # set the line Author :)
       authorClass = author
   return authorClass
 
@@ -50,8 +45,7 @@ authorViewUpdate = ($node) ->
 
   if $node.text!length > 0
     authorClass = authorLines[lineNumber] = derive-primary-author $node
-
-  if $node.text!length is 0
+  else
     $authorContainer.addClass "primary-author-none"
 
   if authorClass
@@ -90,10 +84,8 @@ authorViewUpdate = ($node) ->
 
 # add a hover for line numbers
 fadeColor = (colorCSS, fadeFrac) ->
-  color = void
   color = colorutils.css2triple colorCSS
-  color = colorutils.blend color, [1 1 1 ], fadeFrac
-  colorutils.triple2css color
+  colorutils.triple2css colorutils.blend color, [1 1 1 ], fadeFrac
 
 getAuthorClassName = (author) ->
   'author-' + author.replace /[^a-y0-9]/g, (c) ->
@@ -103,22 +95,26 @@ getAuthorClassName = (author) ->
       'z' + c.charCodeAt(0) + 'z'
 
 
+# XXX: this should be just injected with aceEditorCSS. investigate if we can inject outer
 var init
+function outerInit(outerDynamicCSS)
+  outerDynamicCSS.selectorStyle '#sidedivinner > div.primary-author-none'
+    ..border-right = 'solid 0px '
+    ..padding-right = '5px'
+  outerDynamicCSS.selectorStyle '#sidedivinner > div.concise::before'
+    ..content = "' '"
+  outerDynamicCSS.selectorStyle '#sidedivinner > div'
+    ..font-size = '0px'
+  outerDynamicCSS.selectorStyle '#sidedivinner > div::before'
+    ..font-size = 'initial'
+    ..text-overflow = 'ellipsis'
+    ..overflow = 'hidden'
+  init := true
+
 export function aceSetAuthorStyle(name, context)
   { dynamicCSS, outerDynamicCSS, parentDynamicCSS, info, author, authorSelector } = context
-  unless init
-    outerDynamicCSS.selectorStyle '#sidedivinner > div.primary-author-none'
-      ..border-right = 'solid 0px '
-      ..padding-right = '5px'
-    outerDynamicCSS.selectorStyle '#sidedivinner > div.concise::before'
-      ..content = "' '"
-    outerDynamicCSS.selectorStyle '#sidedivinner > div'
-      ..font-size = '0px'
-    outerDynamicCSS.selectorStyle '#sidedivinner > div::before'
-      ..font-size = 'initial'
-      ..text-overflow = 'ellipsis'
-      ..overflow = 'hidden'
-    init = true
+  outerInit outerDynamicCSS unless init
+
   if info
     return 1 unless color = info.bgcolor
     authorClass = getAuthorClassName author
