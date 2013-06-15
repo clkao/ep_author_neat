@@ -1,3 +1,5 @@
+hasEnter = false
+
 function derive-primary-author($node)
   by-author = {}
   $node.children 'span' .each ->
@@ -33,8 +35,7 @@ function toggle-author($node, prefix, authorClass)
       $node.removeClass c
   $node.addClass my-class unless has-class
 
-authorViewUpdate = (node) ->
-  $node = $ node
+authorViewUpdate = ($node) ->
   lineNumber = $node.index!
   # dont process lines we dont know the number of.
   return false if lineNumber is -1
@@ -103,6 +104,13 @@ authorViewUpdate = (node) ->
       .find '#sidedivinner' .find "div:nth-child(#lineNumber)"
       .attr 'title', 'Line number ' + lineNumber
 
+    if hasEnter
+      next = $node.next!
+      if next.length
+        authorViewUpdate next
+      else
+        hasEnter := false
+
 # add a hover for line numbers
 fadeColor = (colorCSS, fadeFrac) ->
   color = void
@@ -136,10 +144,14 @@ export function aceSetAuthorStyle(name, context)
     dynamicCSS.selectorStyle ".authorColors .primary-#authorClass .#authorClass"
       ..border-bottom = '0px'
     # primary author style on left
-    outerDynamicCSS.selectorStyle "\#sidedivinner > div.primary-#authorClass"
+    outerDynamicCSS.selectorStyle "\#sidedivinner div.primary-#authorClass"
       ..border-right = "solid 5px #{color}"
       ..padding-right = '5px'
-      ..content = authorName + ';)'
+    outerDynamicCSS.selectorStyle "\#sidedivinner div.primary-#authorClass::after"
+      ..content = '#'
+      ..display = 'block'
+      ..width = '10px'
+      ..border = '1px solid black'
 
   else
     dynamicCSS.removeSelectorStyle authorSelector
@@ -187,10 +199,15 @@ authorLines = {}
 # When the DOM is edited
 export function acePostWriteDomLineHTML(hook_name, args, cb)
   # avoid pesky race conditions
-  setTimeout (-> authorViewUpdate args.node), 200ms
+  setTimeout (-> authorViewUpdate $ args.node), 200ms
 
 # on an edit
-export function aceEditEvent(hook_name, {callstack}, cb)
+export function aceKeyEvent(hook_name, {evt}:context, cb)
+  if evt.keyCode is 13
+    hasEnter := true
+
+# on an edit
+export function aceEditEvent(hook_name, {callstack}:context, cb)
   return unless callstack.type is \setWraps
   $ 'iframe[name="ace_outer"]' .contents!
     # no need for padding when we use borders
@@ -198,7 +215,7 @@ export function aceEditEvent(hook_name, {callstack}, cb)
     # set max width to 180
     ..find '#sidedivinner' .css do
       'max-width': '180px'
-      overflow: 'hidden'
+      overflow: 'hidden'o
     ..find '#sidedivinner > div' .css do
       'text-overflow': 'ellipsis'
       overflow: 'hidden'

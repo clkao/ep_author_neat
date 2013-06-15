@@ -1,4 +1,5 @@
-var authorViewUpdate, fadeColor, getAuthorClassName, authorIdFromClass, authorNameAndColorFromAuthorId, authorLines, isStyleFuncSupported, out$ = typeof exports != 'undefined' && exports || this;
+var hasEnter, authorViewUpdate, fadeColor, getAuthorClassName, authorIdFromClass, authorNameAndColorFromAuthorId, authorLines, isStyleFuncSupported, out$ = typeof exports != 'undefined' && exports || this;
+hasEnter = false;
 function derivePrimaryAuthor($node){
   var byAuthor, mPA, authorClass, author, value;
   byAuthor = {};
@@ -46,9 +47,8 @@ function toggleAuthor($node, prefix, authorClass){
     return $node.addClass(myClass);
   }
 }
-authorViewUpdate = function(node){
-  var $node, lineNumber, prevAuthor, authors, authorClass, prev, next, x$, $authorContainer, prevLineAuthorClass, authorId, authorChanged, authorNameAndColor, $sidedivinner, prevLineSameAuthor, y$, $nextAuthorContainer;
-  $node = $(node);
+authorViewUpdate = function($node){
+  var lineNumber, prevAuthor, authors, authorClass, prev, next, x$, $authorContainer, prevLineAuthorClass, authorId, authorChanged, authorNameAndColor, $sidedivinner, prevLineSameAuthor, y$, $nextAuthorContainer;
   lineNumber = $node.index();
   if (lineNumber === -1) {
     return false;
@@ -93,7 +93,15 @@ authorViewUpdate = function(node){
         $authorContainer.html('');
       }
     }
-    return $('iframe[name="ace_outer"]').contents().find('#sidedivinner').find("div:nth-child(" + lineNumber + ")").attr('title', 'Line number ' + lineNumber);
+    $('iframe[name="ace_outer"]').contents().find('#sidedivinner').find("div:nth-child(" + lineNumber + ")").attr('title', 'Line number ' + lineNumber);
+    if (hasEnter) {
+      next = $node.next();
+      if (next.length) {
+        return authorViewUpdate(next);
+      } else {
+        return hasEnter = false;
+      }
+    }
   }
 };
 fadeColor = function(colorCSS, fadeFrac){
@@ -114,7 +122,7 @@ getAuthorClassName = function(author){
 };
 out$.aceSetAuthorStyle = aceSetAuthorStyle;
 function aceSetAuthorStyle(name, context){
-  var dynamicCSS, outerDynamicCSS, parentDynamicCSS, info, author, authorSelector, x$, color, authorClass, authorName, y$, z$, z1$, z2$;
+  var dynamicCSS, outerDynamicCSS, parentDynamicCSS, info, author, authorSelector, x$, color, authorClass, authorName, y$, z$, z1$, z2$, z3$;
   dynamicCSS = context.dynamicCSS, outerDynamicCSS = context.outerDynamicCSS, parentDynamicCSS = context.parentDynamicCSS, info = context.info, author = context.author, authorSelector = context.authorSelector;
   x$ = outerDynamicCSS.selectorStyle("#sidedivinner > div.primary-author-none");
   x$.borderRight = 'solid 0px ';
@@ -132,10 +140,14 @@ function aceSetAuthorStyle(name, context){
     z$.borderBottom = "2px solid " + color;
     z1$ = dynamicCSS.selectorStyle(".authorColors .primary-" + authorClass + " ." + authorClass);
     z1$.borderBottom = '0px';
-    z2$ = outerDynamicCSS.selectorStyle("#sidedivinner > div.primary-" + authorClass);
+    z2$ = outerDynamicCSS.selectorStyle("#sidedivinner div.primary-" + authorClass);
     z2$.borderRight = "solid 5px " + color;
     z2$.paddingRight = '5px';
-    z2$.content = authorName + ';)';
+    z3$ = outerDynamicCSS.selectorStyle("#sidedivinner div.primary-" + authorClass + "::after");
+    z3$.content = '#';
+    z3$.display = 'block';
+    z3$.width = '10px';
+    z3$.border = '1px solid black';
   } else {
     dynamicCSS.removeSelectorStyle(authorSelector);
     parentDynamicCSS.removeSelectorStyle(authorSelector);
@@ -193,13 +205,21 @@ authorLines = {};
 out$.acePostWriteDomLineHTML = acePostWriteDomLineHTML;
 function acePostWriteDomLineHTML(hook_name, args, cb){
   return setTimeout(function(){
-    return authorViewUpdate(args.node);
+    return authorViewUpdate($(args.node));
   }, 200);
 }
+out$.aceKeyEvent = aceKeyEvent;
+function aceKeyEvent(hook_name, context, cb){
+  var evt;
+  evt = context.evt;
+  if (evt.keyCode === 13) {
+    return hasEnter = true;
+  }
+}
 out$.aceEditEvent = aceEditEvent;
-function aceEditEvent(hook_name, arg$, cb){
+function aceEditEvent(hook_name, context, cb){
   var callstack, x$;
-  callstack = arg$.callstack;
+  callstack = context.callstack;
   if (callstack.type !== 'setWraps') {
     return;
   }
@@ -209,7 +229,7 @@ function aceEditEvent(hook_name, arg$, cb){
   });
   x$.find('#sidedivinner').css({
     'max-width': '180px',
-    overflow: 'hidden'
+    overflow: 'hidden'.o
   });
   x$.find('#sidedivinner > div').css({
     'text-overflow': 'ellipsis',
