@@ -48,7 +48,7 @@ function toggleAuthor($node, prefix, authorClass){
   }
 }
 authorViewUpdate = function($node){
-  var lineNumber, prevAuthor, authors, authorClass, prev, next, x$, $authorContainer, prevLineAuthorClass, authorId, authorChanged, authorNameAndColor, $sidedivinner, prevLineSameAuthor, y$, $nextAuthorContainer;
+  var lineNumber, prevAuthor, authors, authorClass, prev, next, $sidedivinner, x$, $authorContainer, prevLineAuthorClass, authorId, authorChanged, authorNameAndColor, prevLineSameAuthor, y$, $nextAuthorContainer;
   lineNumber = $node.index();
   if (lineNumber === -1) {
     return false;
@@ -63,8 +63,9 @@ authorViewUpdate = function($node){
   }
   prev = lineNumber - 1;
   next = lineNumber + 1;
+  $sidedivinner = $('iframe[name="ace_outer"]').contents().find('#sidedivinner');
   if ($node.text().length === 0) {
-    x$ = $authorContainer = $('iframe[name="ace_outer"]').contents().find('#sidedivinner').find("div:nth-child(" + lineNumber + ")");
+    x$ = $authorContainer = $sidedivinner.find("div:nth-child(" + lineNumber + ")");
     x$.addClass("primary-author-none");
     x$.html('');
   }
@@ -76,7 +77,6 @@ authorViewUpdate = function($node){
     }
     authorChanged = authorClass !== prevAuthor;
     authorNameAndColor = authorNameAndColorFromAuthorId(authorId);
-    $sidedivinner = $('iframe[name="ace_outer"]').contents().find('#sidedivinner');
     $authorContainer = $sidedivinner.find("div:nth-child(" + lineNumber + ")");
     toggleAuthor($authorContainer, "primary", authorClass);
     prevLineSameAuthor = authorLines[prev] === authorClass;
@@ -93,14 +93,14 @@ authorViewUpdate = function($node){
         $authorContainer.html('');
       }
     }
-    $('iframe[name="ace_outer"]').contents().find('#sidedivinner').find("div:nth-child(" + lineNumber + ")").attr('title', 'Line number ' + lineNumber);
-    if (hasEnter) {
-      next = $node.next();
-      if (next.length) {
-        return authorViewUpdate(next);
-      } else {
-        return hasEnter = false;
-      }
+    $sidedivinner.find("div:nth-child(" + lineNumber + ")").attr('title', 'Line number ' + lineNumber);
+  }
+  if (hasEnter) {
+    next = $node.next();
+    if (next.length) {
+      return authorViewUpdate(next);
+    } else {
+      return hasEnter = false;
     }
   }
 };
@@ -212,7 +212,7 @@ out$.aceKeyEvent = aceKeyEvent;
 function aceKeyEvent(hook_name, context, cb){
   var evt;
   evt = context.evt;
-  if (evt.keyCode === 13) {
+  if (evt.keyCode === 13 && evt.type === 'keyup') {
     return hasEnter = true;
   }
 }

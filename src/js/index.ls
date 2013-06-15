@@ -52,9 +52,10 @@ authorViewUpdate = ($node) ->
   prev = lineNumber - 1
   # previous item is always one less than current linenumber
   next = lineNumber + 1
+  $sidedivinner = $ 'iframe[name="ace_outer"]' .contents!find '#sidedivinner'
   if $node.text!length is 0
     # get the left side author contains // VERY SLOW!
-    $authorContainer = $ 'iframe[name="ace_outer"]' .contents!find '#sidedivinner' .find "div:nth-child(#lineNumber)"
+    $authorContainer = $sidedivinner.find "div:nth-child(#lineNumber)"
       # line is blank, we should nuke the line number
       ..addClass "primary-author-none"
       ..html ''
@@ -75,8 +76,6 @@ authorViewUpdate = ($node) ->
     # Has the author changed, if so we need to uipdate the UI anyways..
     authorNameAndColor = authorNameAndColorFromAuthorId authorId
     # Get the authorName And Color
-    $sidedivinner = $ 'iframe[name="ace_outer"]' .contents!find '#sidedivinner'
-    # XXX use dynamic css and just set class
     $authorContainer = $sidedivinner.find "div:nth-child(#lineNumber)"
     toggle-author $authorContainer, "primary", authorClass
     # The below logic breaks when you remove chunks of content because the hook only
@@ -100,16 +99,15 @@ authorViewUpdate = ($node) ->
         # write the author name
         $authorContainer.html ''
     # If the authorClass is not the same as the previous line author class and the author had not changed
-    $ 'iframe[name="ace_outer"]' .contents!
-      .find '#sidedivinner' .find "div:nth-child(#lineNumber)"
+    $sidedivinner.find "div:nth-child(#lineNumber)"
       .attr 'title', 'Line number ' + lineNumber
 
-    if hasEnter
-      next = $node.next!
-      if next.length
-        authorViewUpdate next
-      else
-        hasEnter := false
+  if hasEnter
+    next = $node.next!
+    if next.length
+      authorViewUpdate next
+    else
+      hasEnter := false
 
 # add a hover for line numbers
 fadeColor = (colorCSS, fadeFrac) ->
@@ -203,7 +201,7 @@ export function acePostWriteDomLineHTML(hook_name, args, cb)
 
 # on an edit
 export function aceKeyEvent(hook_name, {evt}:context, cb)
-  if evt.keyCode is 13
+  if evt.keyCode is 13 and evt.type is \keyup
     hasEnter := true
 
 # on an edit
