@@ -58,7 +58,6 @@ authorViewUpdate = ($node) ->
     $authorContainer = $sidedivinner.find "div:nth-child(#lineNumber)"
       # line is blank, we should nuke the line number
       ..addClass "primary-author-none"
-      ..html ''
   # add some blank padding to keep things neat
   # if the line has no text
   if authorClass
@@ -87,17 +86,17 @@ authorViewUpdate = ($node) ->
     # Does the next line have the same author?
     if authorLines[next] is authorClass
       $nextAuthorContainer = $sidedivinner.find "div:nth-child(#next)"
-        ..html ''
+        ..addClass \concise
       # does the previous line have the same author?
       if not prevLineSameAuthor
-        $authorContainer.html authorNameAndColor.name
+        $authorContainer.removeClass \concise
     else
       # write the author name
       if authorClass isnt prevLineAuthorClass and not authorChanged
-        $authorContainer.html authorNameAndColor.name
+        $authorContainer.removeClass \concise
       else
         # write the author name
-        $authorContainer.html ''
+        $authorContainer.addClass \concise
     # If the authorClass is not the same as the previous line author class and the author had not changed
     $sidedivinner.find "div:nth-child(#lineNumber)"
       .attr 'title', 'Line number ' + lineNumber
@@ -123,11 +122,23 @@ getAuthorClassName = (author) ->
     else
       'z' + c.charCodeAt(0) + 'z'
 
+
+var init
 export function aceSetAuthorStyle(name, context)
   { dynamicCSS, outerDynamicCSS, parentDynamicCSS, info, author, authorSelector } = context
-  outerDynamicCSS.selectorStyle "\#sidedivinner > div.primary-author-none"
-    ..border-right = 'solid 0px '
-    ..padding-right = '5px'
+  unless init
+    outerDynamicCSS.selectorStyle '#sidedivinner > div.primary-author-none'
+      ..border-right = 'solid 0px '
+      ..padding-right = '5px'
+    outerDynamicCSS.selectorStyle '#sidedivinner > div.concise::before'
+      ..content = "' '"
+    outerDynamicCSS.selectorStyle '#sidedivinner > div'
+      ..font-size = '0px'
+    outerDynamicCSS.selectorStyle '#sidedivinner > div::before'
+      ..font-size = 'initial'
+      ..text-overflow = 'ellipsis'
+      ..overflow = 'hidden'
+    init = true
   if info
     return 1 unless color = info.bgcolor
     authorClass = getAuthorClassName author
@@ -142,14 +153,11 @@ export function aceSetAuthorStyle(name, context)
     dynamicCSS.selectorStyle ".authorColors .primary-#authorClass .#authorClass"
       ..border-bottom = '0px'
     # primary author style on left
-    outerDynamicCSS.selectorStyle "\#sidedivinner div.primary-#authorClass"
+    outerDynamicCSS.selectorStyle "\#sidedivinner > div.primary-#authorClass"
       ..border-right = "solid 5px #{color}"
       ..padding-right = '5px'
-    outerDynamicCSS.selectorStyle "\#sidedivinner div.primary-#authorClass::after"
-      ..content = '#'
-      ..display = 'block'
-      ..width = '10px'
-      ..border = '1px solid black'
+    outerDynamicCSS.selectorStyle "\#sidedivinner > div.primary-#authorClass::before"
+      ..content = "'#{ authorNameAndColorFromAuthorId author .name }'"
 
   else
     dynamicCSS.removeSelectorStyle authorSelector
@@ -213,9 +221,6 @@ export function aceEditEvent(hook_name, {callstack}:context, cb)
     # set max width to 180
     ..find '#sidedivinner' .css do
       'max-width': '180px'
-      overflow: 'hidden'o
-    ..find '#sidedivinner > div' .css do
-      'text-overflow': 'ellipsis'
       overflow: 'hidden'
 
 # For those who need them (< IE 9), add support for CSS functions

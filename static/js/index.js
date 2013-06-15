@@ -1,4 +1,4 @@
-var hasEnter, authorViewUpdate, fadeColor, getAuthorClassName, authorIdFromClass, authorNameAndColorFromAuthorId, authorLines, isStyleFuncSupported, out$ = typeof exports != 'undefined' && exports || this;
+var hasEnter, authorViewUpdate, fadeColor, getAuthorClassName, init, authorIdFromClass, authorNameAndColorFromAuthorId, authorLines, isStyleFuncSupported, out$ = typeof exports != 'undefined' && exports || this;
 hasEnter = false;
 function derivePrimaryAuthor($node){
   var byAuthor, mPA, authorClass, author, value;
@@ -67,7 +67,6 @@ authorViewUpdate = function($node){
   if ($node.text().length === 0) {
     x$ = $authorContainer = $sidedivinner.find("div:nth-child(" + lineNumber + ")");
     x$.addClass("primary-author-none");
-    x$.html('');
   }
   if (authorClass) {
     toggleAuthor($node, "primary", authorClass);
@@ -82,15 +81,15 @@ authorViewUpdate = function($node){
     prevLineSameAuthor = authorLines[prev] === authorClass;
     if (authorLines[next] === authorClass) {
       y$ = $nextAuthorContainer = $sidedivinner.find("div:nth-child(" + next + ")");
-      y$.html('');
+      y$.addClass('concise');
       if (!prevLineSameAuthor) {
-        $authorContainer.html(authorNameAndColor.name);
+        $authorContainer.removeClass('concise');
       }
     } else {
       if (authorClass !== prevLineAuthorClass && !authorChanged) {
-        $authorContainer.html(authorNameAndColor.name);
+        $authorContainer.removeClass('concise');
       } else {
-        $authorContainer.html('');
+        $authorContainer.addClass('concise');
       }
     }
     $sidedivinner.find("div:nth-child(" + lineNumber + ")").attr('title', 'Line number ' + lineNumber);
@@ -122,11 +121,22 @@ getAuthorClassName = function(author){
 };
 out$.aceSetAuthorStyle = aceSetAuthorStyle;
 function aceSetAuthorStyle(name, context){
-  var dynamicCSS, outerDynamicCSS, parentDynamicCSS, info, author, authorSelector, x$, color, authorClass, authorName, y$, z$, z1$, z2$, z3$;
+  var dynamicCSS, outerDynamicCSS, parentDynamicCSS, info, author, authorSelector, x$, y$, z$, z1$, init, color, authorClass, authorName, z2$, z3$, z4$, z5$, z6$;
   dynamicCSS = context.dynamicCSS, outerDynamicCSS = context.outerDynamicCSS, parentDynamicCSS = context.parentDynamicCSS, info = context.info, author = context.author, authorSelector = context.authorSelector;
-  x$ = outerDynamicCSS.selectorStyle("#sidedivinner > div.primary-author-none");
-  x$.borderRight = 'solid 0px ';
-  x$.paddingRight = '5px';
+  if (!init) {
+    x$ = outerDynamicCSS.selectorStyle('#sidedivinner > div.primary-author-none');
+    x$.borderRight = 'solid 0px ';
+    x$.paddingRight = '5px';
+    y$ = outerDynamicCSS.selectorStyle('#sidedivinner > div.concise::before');
+    y$.content = "' '";
+    z$ = outerDynamicCSS.selectorStyle('#sidedivinner > div');
+    z$.fontSize = '0px';
+    z1$ = outerDynamicCSS.selectorStyle('#sidedivinner > div::before');
+    z1$.fontSize = 'initial';
+    z1$.textOverflow = 'ellipsis';
+    z1$.overflow = 'hidden';
+    init = true;
+  }
   if (info) {
     if (!(color = info.bgcolor)) {
       return 1;
@@ -134,20 +144,17 @@ function aceSetAuthorStyle(name, context){
     authorClass = getAuthorClassName(author);
     authorName = authorNameAndColorFromAuthorId(author).name;
     authorSelector = ".authorColors span." + authorClass;
-    y$ = dynamicCSS.selectorStyle(authorSelector);
-    y$.borderBottom = "2px solid " + color;
-    z$ = parentDynamicCSS.selectorStyle(authorSelector);
-    z$.borderBottom = "2px solid " + color;
-    z1$ = dynamicCSS.selectorStyle(".authorColors .primary-" + authorClass + " ." + authorClass);
-    z1$.borderBottom = '0px';
-    z2$ = outerDynamicCSS.selectorStyle("#sidedivinner div.primary-" + authorClass);
-    z2$.borderRight = "solid 5px " + color;
-    z2$.paddingRight = '5px';
-    z3$ = outerDynamicCSS.selectorStyle("#sidedivinner div.primary-" + authorClass + "::after");
-    z3$.content = '#';
-    z3$.display = 'block';
-    z3$.width = '10px';
-    z3$.border = '1px solid black';
+    z2$ = dynamicCSS.selectorStyle(authorSelector);
+    z2$.borderBottom = "2px solid " + color;
+    z3$ = parentDynamicCSS.selectorStyle(authorSelector);
+    z3$.borderBottom = "2px solid " + color;
+    z4$ = dynamicCSS.selectorStyle(".authorColors .primary-" + authorClass + " ." + authorClass);
+    z4$.borderBottom = '0px';
+    z5$ = outerDynamicCSS.selectorStyle("#sidedivinner > div.primary-" + authorClass);
+    z5$.borderRight = "solid 5px " + color;
+    z5$.paddingRight = '5px';
+    z6$ = outerDynamicCSS.selectorStyle("#sidedivinner > div.primary-" + authorClass + "::before");
+    z6$.content = "'" + authorNameAndColorFromAuthorId(author).name + "'";
   } else {
     dynamicCSS.removeSelectorStyle(authorSelector);
     parentDynamicCSS.removeSelectorStyle(authorSelector);
@@ -229,10 +236,6 @@ function aceEditEvent(hook_name, context, cb){
   });
   x$.find('#sidedivinner').css({
     'max-width': '180px',
-    overflow: 'hidden'.o
-  });
-  x$.find('#sidedivinner > div').css({
-    'text-overflow': 'ellipsis',
     overflow: 'hidden'
   });
   return x$;
