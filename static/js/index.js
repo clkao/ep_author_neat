@@ -1,4 +1,4 @@
-var hasEnter, authorViewUpdate, fadeColor, getAuthorClassName, init, authorIdFromClass, authorNameAndColorFromAuthorId, authorLines, isStyleFuncSupported, out$ = typeof exports != 'undefined' && exports || this;
+var hasEnter, authorViewUpdate, fadeColor, getAuthorClassName, init, authorNameAndColorFromAuthorId, authorLines, isStyleFuncSupported, out$ = typeof exports != 'undefined' && exports || this;
 hasEnter = false;
 function derivePrimaryAuthor($node){
   var byAuthor, mPA, authorClass, author, value;
@@ -48,7 +48,7 @@ function toggleAuthor($node, prefix, authorClass){
   }
 }
 authorViewUpdate = function($node){
-  var lineNumber, prevAuthor, authors, authorClass, prev, next, $sidedivinner, x$, $authorContainer, prevLineAuthorClass, authorId, authorChanged, authorNameAndColor, prevLineSameAuthor, y$, $nextAuthorContainer;
+  var lineNumber, prevAuthor, authors, authorClass, prev, next, $sidedivinner, x$, $authorContainer, y$, $nextAuthorContainer, prevLineSameAuthor, authorChanged, prevLineAuthorClass;
   lineNumber = $node.index();
   if (lineNumber === -1) {
     return false;
@@ -70,22 +70,18 @@ authorViewUpdate = function($node){
   }
   if (authorClass) {
     toggleAuthor($node, "primary", authorClass);
-    prevLineAuthorClass = authorLines[prev];
-    if (!(authorId = authorIdFromClass(authorClass))) {
-      return;
-    }
-    authorChanged = authorClass !== prevAuthor;
-    authorNameAndColor = authorNameAndColorFromAuthorId(authorId);
     $authorContainer = $sidedivinner.find("div:nth-child(" + lineNumber + ")");
     toggleAuthor($authorContainer, "primary", authorClass);
-    prevLineSameAuthor = authorLines[prev] === authorClass;
     if (authorLines[next] === authorClass) {
       y$ = $nextAuthorContainer = $sidedivinner.find("div:nth-child(" + next + ")");
       y$.addClass('concise');
+      prevLineSameAuthor = authorLines[prev] === authorClass;
       if (!prevLineSameAuthor) {
         $authorContainer.removeClass('concise');
       }
     } else {
+      authorChanged = authorClass !== prevAuthor;
+      prevLineAuthorClass = authorLines[prev];
       if (authorClass !== prevLineAuthorClass && !authorChanged) {
         $authorContainer.removeClass('concise');
       } else {
@@ -161,22 +157,6 @@ function aceSetAuthorStyle(name, context){
   }
   return 1;
 }
-authorIdFromClass = function(className){
-  if (className.substring(0, 7) === 'author-') {
-    className = className.substring(0, 52);
-    return className.substring(7).replace(/[a-y0-9]+|-|z.+?z/g, function(cc){
-      if (cc === '-') {
-        return '.';
-      } else {
-        if (cc.charAt(0) === 'z') {
-          return String.fromCharCode(Number(cc.slice(1, -1)));
-        } else {
-          return cc;
-        }
-      }
-    });
-  }
-};
 authorNameAndColorFromAuthorId = function(authorId){
   var myAuthorId, authorObj;
   myAuthorId = pad.myUserInfo.userId;

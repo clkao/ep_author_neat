@@ -62,36 +62,22 @@ authorViewUpdate = ($node) ->
   # if the line has no text
   if authorClass
     toggle-author $node, "primary", authorClass
-    # XXX: remove other old author class
-    # Write authorName to the sidediv..
-    # get previous authorContainer text
-    # get the previous author class
-    prevLineAuthorClass = authorLines[prev]
-    return unless authorId = authorIdFromClass authorClass
-    # Default text isn't shown
-    # below throws true but we might need to rewrite anyway so lets do that..
-    # console.log(authorClass, prevAuthor);
-    authorChanged = authorClass isnt prevAuthor
-    # Has the author changed, if so we need to uipdate the UI anyways..
-    authorNameAndColor = authorNameAndColorFromAuthorId authorId
-    # Get the authorName And Color
     $authorContainer = $sidedivinner.find "div:nth-child(#lineNumber)"
     toggle-author $authorContainer, "primary", authorClass
-    # The below logic breaks when you remove chunks of content because the hook only
-    # the plugin only redraws the actual line edited..  WTF!
-    # To fix it we need to do a while loop over the authorLines object
-    # Does the previous line have the same author?
-    prevLineSameAuthor = authorLines[prev] is authorClass
     # this line shouldn't have any author name.
     # Does the next line have the same author?
     if authorLines[next] is authorClass
       $nextAuthorContainer = $sidedivinner.find "div:nth-child(#next)"
         ..addClass \concise
       # does the previous line have the same author?
+      prevLineSameAuthor = authorLines[prev] is authorClass
       if not prevLineSameAuthor
         $authorContainer.removeClass \concise
     else
       # write the author name
+      # Has the author changed, if so we need to uipdate the UI anyways..
+      authorChanged = authorClass isnt prevAuthor
+      prevLineAuthorClass = authorLines[prev]
       if authorClass isnt prevLineAuthorClass and not authorChanged
         $authorContainer.removeClass \concise
       else
@@ -163,17 +149,6 @@ export function aceSetAuthorStyle(name, context)
     dynamicCSS.removeSelectorStyle authorSelector
     parentDynamicCSS.removeSelectorStyle authorSelector
   1
-
-authorIdFromClass = (className) ->
-  if (className.substring 0, 7) is 'author-'
-    className = className.substring 0, 52
-    (className.substring 7).replace /[a-y0-9]+|-|z.+?z/g, (cc) ->
-      if cc is '-'
-        '.'
-      else
-        if (cc.charAt 0) is 'z'
-          String.fromCharCode Number cc.slice 1, -1
-        else cc
 
 authorNameAndColorFromAuthorId = (authorId) ->
   myAuthorId = pad.myUserInfo.userId
