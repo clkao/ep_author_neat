@@ -25,7 +25,8 @@ function derive-primary-author($node)
 function toggle-author($node, prefix, authorClass)
   has-class = false
   my-class = "#prefix-#authorClass"
-  for c in ($node.attr \class ?split ' ') ? [] when c.indexOf(prefix) is 0
+  attr = $node.attr(\class) ? ''
+  for c in attr.split ' ' when c.indexOf(prefix) is 0
     if c is my-class
       has-class = true
     else
@@ -54,10 +55,8 @@ authorViewUpdate = (node) ->
     # get the left side author contains // VERY SLOW!
     $authorContainer = $ 'iframe[name="ace_outer"]' .contents!find '#sidedivinner' .find "div:nth-child(#lineNumber)"
       # line is blank, we should nuke the line number
+      ..addClass "primary-author-none"
       ..html ''
-      ..css do
-        'border-right': 'solid 0px '
-        'padding-right': '5px'
   # add some blank padding to keep things neat
   # if the line has no text
   if authorClass
@@ -120,9 +119,13 @@ getAuthorClassName = (author) ->
 
 export function aceSetAuthorStyle(name, context)
   { dynamicCSS, outerDynamicCSS, parentDynamicCSS, info, author, authorSelector } = context
+  outerDynamicCSS.selectorStyle "\#sidedivinner > div.primary-author-none"
+    ..border-right = 'solid 0px '
+    ..padding-right = '5px'
   if info
     return 1 unless color = info.bgcolor
     authorClass = getAuthorClassName author
+    authorName = authorNameAndColorFromAuthorId author .name
     authorSelector = ".authorColors span.#authorClass"
     # author style
     dynamicCSS.selectorStyle authorSelector
@@ -136,6 +139,7 @@ export function aceSetAuthorStyle(name, context)
     outerDynamicCSS.selectorStyle "\#sidedivinner > div.primary-#authorClass"
       ..border-right = "solid 5px #{color}"
       ..padding-right = '5px'
+      ..content = authorName + ';)'
 
   else
     dynamicCSS.removeSelectorStyle authorSelector
