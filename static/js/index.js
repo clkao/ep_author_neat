@@ -9,14 +9,17 @@ function postAceInit(hook_name, arg$){
   ace = arg$.ace;
   $sidedivinner = $('iframe[name="ace_outer"]').contents().find('#sidedivinner').addClass('authorColors');
   return ace.callWithAce(function(ace){
-    var $doc, x$;
+    var $doc, $body, x$;
     $doc = $(ace.ace_getDocument());
-    x$ = $doc.find('body').get(0).ownerDocument;
+    $body = $doc.find('body');
+    x$ = $body.get(0).ownerDocument;
     x$.addEventListener('focus', function(){
-      return $sidedivinner.addClass('authorColors');
+      $sidedivinner.addClass('authorColors');
+      return $body.addClass('focus');
     }, true);
     x$.addEventListener('blur', function(){
-      return $sidedivinner.removeClass('authorColors');
+      $sidedivinner.removeClass('authorColors');
+      return $body.removeClass('focus');
     }, true);
     return x$;
   });
@@ -168,11 +171,11 @@ function aceSetAuthorStyle(name, context){
     authorClass = getAuthorClassName(author);
     authorName = authorNameAndColorFromAuthorId(author).name;
     authorSelector = ".authorColors span." + authorClass;
-    x$ = dynamicCSS.selectorStyle(".authorColors:focus span." + authorClass);
+    x$ = dynamicCSS.selectorStyle(".authorColors.focus span." + authorClass);
     x$.borderBottom = "2px solid " + color;
     y$ = parentDynamicCSS.selectorStyle(authorSelector);
     y$.borderBottom = "2px solid " + color;
-    z$ = dynamicCSS.selectorStyle(".authorColors:focus .primary-" + authorClass + " ." + authorClass);
+    z$ = dynamicCSS.selectorStyle(".authorColors.focus .primary-" + authorClass + " ." + authorClass);
     z$.borderBottom = '0px';
     z1$ = outerDynamicCSS.selectorStyle("#sidedivinner.authorColors > div.primary-" + authorClass);
     z1$.borderRight = "solid 5px " + color;
@@ -180,7 +183,7 @@ function aceSetAuthorStyle(name, context){
     z2$ = outerDynamicCSS.selectorStyle("#sidedivinner > div.primary-" + authorClass + "::before");
     z2$.content = "'" + authorNameAndColorFromAuthorId(author).name + "'";
   } else {
-    dynamicCSS.removeSelectorStyle(".authorColors:focus span." + authorClass);
+    dynamicCSS.removeSelectorStyle(".authorColors.focus span." + authorClass);
     parentDynamicCSS.removeSelectorStyle(authorSelector);
   }
   return 1;

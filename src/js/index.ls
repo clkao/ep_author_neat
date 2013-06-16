@@ -6,9 +6,14 @@ export function postAceInit(hook_name, {ace})
     .addClass \authorColors
   ace.callWithAce (ace) ->
     $doc = $ ace.ace_getDocument!
-    $doc.find \body .get 0 .ownerDocument
-      ..addEventListener \focus (-> $sidedivinner.addClass \authorColors), true
-      ..addEventListener \blur (-> $sidedivinner.removeClass \authorColors), true
+    $body = $doc.find \body
+    $body .get 0 .ownerDocument
+      ..addEventListener \focus (->
+        $sidedivinner.addClass \authorColors
+        $body.addClass \focus), true
+      ..addEventListener \blur (->
+        $sidedivinner.removeClass \authorColors
+        $body.removeClass \focus), true
 
 function derive-primary-author($node)
   by-author = {}
@@ -123,12 +128,12 @@ export function aceSetAuthorStyle(name, context)
     authorName = authorNameAndColorFromAuthorId author .name
     authorSelector = ".authorColors span.#authorClass"
     # author style
-    dynamicCSS.selectorStyle ".authorColors:focus span.#authorClass"
+    dynamicCSS.selectorStyle ".authorColors.focus span.#authorClass"
       ..border-bottom = "2px solid #color"
     parentDynamicCSS.selectorStyle authorSelector
       ..border-bottom = "2px solid #color"
     # primary author override
-    dynamicCSS.selectorStyle ".authorColors:focus .primary-#authorClass .#authorClass"
+    dynamicCSS.selectorStyle ".authorColors.focus .primary-#authorClass .#authorClass"
       ..border-bottom = '0px'
     # primary author style on left
     outerDynamicCSS.selectorStyle "\#sidedivinner.authorColors > div.primary-#authorClass"
@@ -138,7 +143,7 @@ export function aceSetAuthorStyle(name, context)
       ..content = "'#{ authorNameAndColorFromAuthorId author .name }'"
 
   else
-    dynamicCSS.removeSelectorStyle ".authorColors:focus span.#authorClass"
+    dynamicCSS.removeSelectorStyle ".authorColors.focus span.#authorClass"
     parentDynamicCSS.removeSelectorStyle authorSelector
   1
 
