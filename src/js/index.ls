@@ -6,9 +6,9 @@ export function postAceInit(hook_name, {ace})
     .addClass \authorColors
   ace.callWithAce (ace) ->
     $doc = $ ace.ace_getDocument!
-    $doc.find \body
-      ..focus -> $sidedivinner.addClass \authorColors
-      ..blur -> $sidedivinner.removeClass \authorColors
+    $doc.find \body .get 0 .ownerDocument
+      ..addEventListener \focus (-> $sidedivinner.addClass \authorColors), true
+      ..addEventListener \blur (-> $sidedivinner.removeClass \authorColors), true
 
 function derive-primary-author($node)
   by-author = {}

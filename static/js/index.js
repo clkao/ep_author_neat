@@ -11,13 +11,13 @@ function postAceInit(hook_name, arg$){
   return ace.callWithAce(function(ace){
     var $doc, x$;
     $doc = $(ace.ace_getDocument());
-    x$ = $doc.find('body');
-    x$.focus(function(){
+    x$ = $doc.find('body').get(0).ownerDocument;
+    x$.addEventListener('focus', function(){
       return $sidedivinner.addClass('authorColors');
-    });
-    x$.blur(function(){
+    }, true);
+    x$.addEventListener('blur', function(){
       return $sidedivinner.removeClass('authorColors');
-    });
+    }, true);
     return x$;
   });
 }
