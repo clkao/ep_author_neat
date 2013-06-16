@@ -140,7 +140,7 @@ export function aceSetAuthorStyle(name, context)
       ..border-right = "solid 5px #{color}"
       ..padding-right = '5px'
     outerDynamicCSS.selectorStyle "\#sidedivinner > div.primary-#authorClass::before"
-      ..content = "'#{ authorNameAndColorFromAuthorId author .name }'"
+      ..content = "'#{ authorName }'"
 
   else
     dynamicCSS.removeSelectorStyle ".authorColors.focus span.#authorClass"

@@ -181,7 +181,7 @@ function aceSetAuthorStyle(name, context){
     z1$.borderRight = "solid 5px " + color;
     z1$.paddingRight = '5px';
     z2$ = outerDynamicCSS.selectorStyle("#sidedivinner > div.primary-" + authorClass + "::before");
-    z2$.content = "'" + authorNameAndColorFromAuthorId(author).name + "'";
+    z2$.content = "'" + authorName + "'";
   } else {
     dynamicCSS.removeSelectorStyle(".authorColors.focus span." + authorClass);
     parentDynamicCSS.removeSelectorStyle(authorSelector);
