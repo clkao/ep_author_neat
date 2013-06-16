@@ -3,6 +3,24 @@ function allClasses($node){
   var ref$;
   return ((ref$ = $node.attr('class')) != null ? ref$ : '').split(' ');
 }
+out$.postAceInit = postAceInit;
+function postAceInit(hook_name, arg$){
+  var ace;
+  ace = arg$.ace;
+  $sidedivinner = $('iframe[name="ace_outer"]').contents().find('#sidedivinner').addClass('authorColors');
+  return ace.callWithAce(function(ace){
+    var $doc, x$;
+    $doc = $(ace.ace_getDocument());
+    x$ = $doc.find('body');
+    x$.focus(function(){
+      return $sidedivinner.addClass('authorColors');
+    });
+    x$.blur(function(){
+      return $sidedivinner.removeClass('authorColors');
+    });
+    return x$;
+  });
+}
 function derivePrimaryAuthor($node){
   var byAuthor, mPA, authorClass, author, value;
   byAuthor = {};
@@ -74,7 +92,6 @@ function extractAuthor($node){
 }
 function authorViewUpdate($node, lineNumber, prevAuthor, authorClass){
   var $authorContainer, prev, prevId, ref$, authorChanged, next, logicalPrevAuthor;
-  $sidedivinner == null && ($sidedivinner = $('iframe[name="ace_outer"]').contents().find('#sidedivinner'));
   $authorContainer = $sidedivinner.find("div:nth-child(" + lineNumber + ")");
   authorClass == null && (authorClass = extractAuthor($node));
   if (!prevAuthor) {
@@ -130,6 +147,7 @@ function outerInit(outerDynamicCSS){
   y$.content = "' '";
   z$ = outerDynamicCSS.selectorStyle('#sidedivinner > div');
   z$.fontSize = '0px';
+  z$.paddingRight = '10px';
   z1$ = outerDynamicCSS.selectorStyle('#sidedivinner > div::before');
   z1$.fontSize = 'initial';
   z1$.textOverflow = 'ellipsis';
@@ -156,7 +174,7 @@ function aceSetAuthorStyle(name, context){
     y$.borderBottom = "2px solid " + color;
     z$ = dynamicCSS.selectorStyle(".authorColors:focus .primary-" + authorClass + " ." + authorClass);
     z$.borderBottom = '0px';
-    z1$ = outerDynamicCSS.selectorStyle("#sidedivinner > div.primary-" + authorClass);
+    z1$ = outerDynamicCSS.selectorStyle("#sidedivinner.authorColors > div.primary-" + authorClass);
     z1$.borderRight = "solid 5px " + color;
     z1$.paddingRight = '5px';
     z2$ = outerDynamicCSS.selectorStyle("#sidedivinner > div.primary-" + authorClass + "::before");

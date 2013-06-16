@@ -1,5 +1,15 @@
 function all-classes($node) => ($node.attr(\class) ? '').split ' '
 
+var $sidedivinner
+export function postAceInit(hook_name, {ace})
+  $sidedivinner := $ 'iframe[name="ace_outer"]' .contents!find '#sidedivinner'
+    .addClass \authorColors
+  ace.callWithAce (ace) ->
+    $doc = $ ace.ace_getDocument!
+    $doc.find \body
+      ..focus -> $sidedivinner.addClass \authorColors
+      ..blur -> $sidedivinner.removeClass \authorColors
+
 function derive-primary-author($node)
   by-author = {}
   $node.find 'span' .each ->
@@ -45,10 +55,8 @@ function update-domline($node)
 function extract-author($node)
   [a for a in all-classes $node when a is /^primary-/]?0?replace /^primary-/ ''
 
-var $sidedivinner
 # cache the magicdomid to the sidediv lines, and use that to see if the line is dirty
 function author-view-update($node, lineNumber, prev-author, authorClass)
-  $sidedivinner ?:= $ 'iframe[name="ace_outer"]' .contents!find '#sidedivinner'
   $authorContainer = $sidedivinner.find "div:nth-child(#lineNumber)"
   authorClass ?= extract-author $node
   unless prev-author
@@ -98,6 +106,7 @@ function outerInit(outerDynamicCSS)
     ..content = "' '"
   outerDynamicCSS.selectorStyle '#sidedivinner > div'
     ..font-size = '0px'
+    ..padding-right = '10px'
   outerDynamicCSS.selectorStyle '#sidedivinner > div::before'
     ..font-size = 'initial'
     ..text-overflow = 'ellipsis'
@@ -122,7 +131,7 @@ export function aceSetAuthorStyle(name, context)
     dynamicCSS.selectorStyle ".authorColors:focus .primary-#authorClass .#authorClass"
       ..border-bottom = '0px'
     # primary author style on left
-    outerDynamicCSS.selectorStyle "\#sidedivinner > div.primary-#authorClass"
+    outerDynamicCSS.selectorStyle "\#sidedivinner.authorColors > div.primary-#authorClass"
       ..border-right = "solid 5px #{color}"
       ..padding-right = '5px'
     outerDynamicCSS.selectorStyle "\#sidedivinner > div.primary-#authorClass::before"
