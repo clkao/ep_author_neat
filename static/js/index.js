@@ -74,11 +74,19 @@ function extractAuthor($node){
   }())) != null ? (ref1$ = ref$[0]) != null ? ref1$.replace(/^primary-/, '') : void 8 : void 8;
 }
 function authorViewUpdate($node, lineNumber, prevAuthor, authorClass){
-  var $authorContainer, prevId, ref$, authorChanged, next;
+  var $authorContainer, prev, prevId, ref$, authorChanged, next, logicalPrevAuthor;
   $sidedivinner == null && ($sidedivinner = $('iframe[name="ace_outer"]').contents().find('#sidedivinner'));
   $authorContainer = $sidedivinner.find("div:nth-child(" + lineNumber + ")");
   authorClass == null && (authorClass = extractAuthor($node));
-  prevAuthor == null && (prevAuthor = extractAuthor($authorContainer.prev()));
+  if (!prevAuthor) {
+    prev = $authorContainer;
+    while ((prev = prev.prev()) && prev.length) {
+      prevAuthor = extractAuthor(prev);
+      if (prevAuthor !== 'none') {
+        break;
+      }
+    }
+  }
   prevId = (ref$ = $authorContainer.attr('id')) != null ? ref$.replace(/^ref-/, '') : void 8;
   if (prevAuthor === authorClass) {
     $authorContainer.addClass('concise');
@@ -96,7 +104,8 @@ function authorViewUpdate($node, lineNumber, prevAuthor, authorClass){
   }
   next = $node.next();
   if (next.length) {
-    return authorViewUpdate(next, lineNumber + 1, authorClass);
+    logicalPrevAuthor = authorClass === 'none' ? prevAuthor : authorClass;
+    return authorViewUpdate(next, lineNumber + 1, logicalPrevAuthor);
   }
 }
 fadeColor = function(colorCSS, fadeFrac){

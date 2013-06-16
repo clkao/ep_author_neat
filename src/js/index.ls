@@ -53,7 +53,11 @@ function author-view-update($node, lineNumber, prev-author, authorClass)
   $sidedivinner ?:= $ 'iframe[name="ace_outer"]' .contents!find '#sidedivinner'
   $authorContainer = $sidedivinner.find "div:nth-child(#lineNumber)"
   authorClass ?= extract-author $node
-  prev-author ?= extract-author $authorContainer.prev!
+  unless prev-author
+    prev = $authorContainer
+    while prev.=prev! and prev.length
+      prev-author = extract-author prev
+      break if prev-author isnt \none
   prev-id = $authorContainer.attr(\id)?replace /^ref-/, ''
 
   if prev-author is authorClass
@@ -70,7 +74,8 @@ function author-view-update($node, lineNumber, prev-author, authorClass)
 
   next = $node.next!
   if next.length
-    authorViewUpdate next, lineNumber+1, authorClass
+    logical-prev-author = if authorClass is \none => prev-author else authorClass
+    authorViewUpdate next, lineNumber+1, logical-prev-author
 
 # add a hover for line numbers
 fadeColor = (colorCSS, fadeFrac) ->
