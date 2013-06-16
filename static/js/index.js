@@ -160,17 +160,17 @@ function outerInit(outerDynamicCSS){
 out$.aceSetAuthorStyle = aceSetAuthorStyle;
 function aceSetAuthorStyle(name, context){
   var dynamicCSS, outerDynamicCSS, parentDynamicCSS, info, author, authorSelector, color, authorClass, authorName, x$, y$, z$, z1$, z2$;
-  dynamicCSS = context.dynamicCSS, outerDynamicCSS = context.outerDynamicCSS, parentDynamicCSS = context.parentDynamicCSS, info = context.info, author = context.author, authorSelector = context.authorSelector;
+  dynamicCSS = context.dynamicCSS, outerDynamicCSS = context.outerDynamicCSS, parentDynamicCSS = context.parentDynamicCSS, info = context.info, author = context.author;
   if (!init) {
     outerInit(outerDynamicCSS);
   }
+  authorSelector = ".authorColors span." + authorClass;
   if (info) {
     if (!(color = info.bgcolor)) {
       return 1;
     }
     authorClass = getAuthorClassName(author);
     authorName = authorNameAndColorFromAuthorId(author).name;
-    authorSelector = ".authorColors span." + authorClass;
     x$ = dynamicCSS.selectorStyle(".authorColors.focus span." + authorClass);
     x$.borderBottom = "2px solid " + color;
     y$ = parentDynamicCSS.selectorStyle(authorSelector);

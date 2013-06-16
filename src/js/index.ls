@@ -119,14 +119,14 @@ function outerInit(outerDynamicCSS)
   init := true
 
 export function aceSetAuthorStyle(name, context)
-  { dynamicCSS, outerDynamicCSS, parentDynamicCSS, info, author, authorSelector } = context
+  { dynamicCSS, outerDynamicCSS, parentDynamicCSS, info, author } = context
   outerInit outerDynamicCSS unless init
 
+  authorSelector = ".authorColors span.#authorClass"
   if info
     return 1 unless color = info.bgcolor
     authorClass = getAuthorClassName author
     authorName = authorNameAndColorFromAuthorId author .name
-    authorSelector = ".authorColors span.#authorClass"
     # author style
     dynamicCSS.selectorStyle ".authorColors.focus span.#authorClass"
       ..border-bottom = "2px solid #color"
