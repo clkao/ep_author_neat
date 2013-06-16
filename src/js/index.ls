@@ -1,5 +1,4 @@
-function all-classes($node)
-  ($node.attr(\class) ? '').split ' '
+function all-classes($node) => ($node.attr(\class) ? '').split ' '
 
 function derive-primary-author($node)
   by-author = {}
@@ -31,8 +30,6 @@ function toggle-author($node, prefix, authorClass)
   $node.addClass my-class
   return true
 
-var $sidedivinner
-
 # here we mark primary author on magicdom divs as class
 function update-domline($node)
   lineNumber = $node.index! + 1
@@ -50,6 +47,7 @@ function update-domline($node)
 function extract-author($node)
   [a for a in all-classes $node when a is /^primary-/]?0?replace /^primary-/ ''
 
+var $sidedivinner
 # cache the magicdomid to the sidediv lines, and use that to see if the line is dirty
 function author-view-update($node, lineNumber, prev-author, authorClass)
   $sidedivinner ?:= $ 'iframe[name="ace_outer"]' .contents!find '#sidedivinner'
