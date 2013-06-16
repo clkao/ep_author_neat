@@ -96,7 +96,6 @@ function authorViewUpdate($node, lineNumber, prevAuthor, authorClass){
   }
   next = $node.next();
   if (next.length) {
-    console.log('go', lineNumber + 1);
     return authorViewUpdate(next, lineNumber + 1, authorClass);
   }
 }
@@ -143,11 +142,11 @@ function aceSetAuthorStyle(name, context){
     authorClass = getAuthorClassName(author);
     authorName = authorNameAndColorFromAuthorId(author).name;
     authorSelector = ".authorColors span." + authorClass;
-    x$ = dynamicCSS.selectorStyle(authorSelector);
+    x$ = dynamicCSS.selectorStyle(".authorColors:focus span." + authorClass);
     x$.borderBottom = "2px solid " + color;
     y$ = parentDynamicCSS.selectorStyle(authorSelector);
     y$.borderBottom = "2px solid " + color;
-    z$ = dynamicCSS.selectorStyle(".authorColors .primary-" + authorClass + " ." + authorClass);
+    z$ = dynamicCSS.selectorStyle(".authorColors:focus .primary-" + authorClass + " ." + authorClass);
     z$.borderBottom = '0px';
     z1$ = outerDynamicCSS.selectorStyle("#sidedivinner > div.primary-" + authorClass);
     z1$.borderRight = "solid 5px " + color;
@@ -155,7 +154,7 @@ function aceSetAuthorStyle(name, context){
     z2$ = outerDynamicCSS.selectorStyle("#sidedivinner > div.primary-" + authorClass + "::before");
     z2$.content = "'" + authorNameAndColorFromAuthorId(author).name + "'";
   } else {
-    dynamicCSS.removeSelectorStyle(authorSelector);
+    dynamicCSS.removeSelectorStyle(".authorColors:focus span." + authorClass);
     parentDynamicCSS.removeSelectorStyle(authorSelector);
   }
   return 1;

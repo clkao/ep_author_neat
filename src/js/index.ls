@@ -72,7 +72,6 @@ function author-view-update($node, lineNumber, prev-author, authorClass)
 
   next = $node.next!
   if next.length
-    console.log \go lineNumber+1
     authorViewUpdate next, lineNumber+1, authorClass
 
 # add a hover for line numbers
@@ -114,12 +113,12 @@ export function aceSetAuthorStyle(name, context)
     authorName = authorNameAndColorFromAuthorId author .name
     authorSelector = ".authorColors span.#authorClass"
     # author style
-    dynamicCSS.selectorStyle authorSelector
+    dynamicCSS.selectorStyle ".authorColors:focus span.#authorClass"
       ..border-bottom = "2px solid #color"
     parentDynamicCSS.selectorStyle authorSelector
       ..border-bottom = "2px solid #color"
     # primary author override
-    dynamicCSS.selectorStyle ".authorColors .primary-#authorClass .#authorClass"
+    dynamicCSS.selectorStyle ".authorColors:focus .primary-#authorClass .#authorClass"
       ..border-bottom = '0px'
     # primary author style on left
     outerDynamicCSS.selectorStyle "\#sidedivinner > div.primary-#authorClass"
@@ -129,7 +128,7 @@ export function aceSetAuthorStyle(name, context)
       ..content = "'#{ authorNameAndColorFromAuthorId author .name }'"
 
   else
-    dynamicCSS.removeSelectorStyle authorSelector
+    dynamicCSS.removeSelectorStyle ".authorColors:focus span.#authorClass"
     parentDynamicCSS.removeSelectorStyle authorSelector
   1
 
