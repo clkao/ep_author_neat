@@ -7,14 +7,13 @@ function derivePrimaryAuthor($node){
   var byAuthor, mPA, authorClass, author, value;
   byAuthor = {};
   $node.find('span').each(function(){
-    var $this, i$, ref$, len$, spanclass, length, results$ = [];
+    var $this, i$, ref$, len$, spanclass, results$ = [];
     $this = $(this);
     for (i$ = 0, len$ = (ref$ = allClasses($this)).length; i$ < len$; ++i$) {
       spanclass = ref$[i$];
       if (/^author/.exec(spanclass)) {
-        length = $this.text().length;
         byAuthor[spanclass] == null && (byAuthor[spanclass] = 0);
-        results$.push(byAuthor[spanclass] += length);
+        results$.push(byAuthor[spanclass] += $this.text().length);
       }
     }
     return results$;
@@ -87,12 +86,12 @@ function authorViewUpdate($node, lineNumber, prevAuthor, authorClass){
       }
     }
   }
-  prevId = (ref$ = $authorContainer.attr('id')) != null ? ref$.replace(/^ref-/, '') : void 8;
   if (prevAuthor === authorClass) {
     $authorContainer.addClass('concise');
   } else {
     $authorContainer.removeClass('concise');
   }
+  prevId = (ref$ = $authorContainer.attr('id')) != null ? ref$.replace(/^ref-/, '') : void 8;
   if (prevId === $node.attr('id')) {
     authorChanged = toggleAuthor($authorContainer, "primary", authorClass);
     if (!authorChanged) {

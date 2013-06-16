@@ -5,10 +5,8 @@ function derive-primary-author($node)
   $node.find 'span' .each ->
     $this = $ this
     for spanclass in all-classes $this when spanclass is /^author/
-      length = $this.text!length
-      # the length of the span
       by-author[spanclass] ?= 0
-      by-author[spanclass] += length
+      by-author[spanclass] += $this.text!length
   # mPA = most prolific author
   mPA = 0
   authorClass = null
@@ -58,13 +56,13 @@ function author-view-update($node, lineNumber, prev-author, authorClass)
     while prev.=prev! and prev.length
       prev-author = extract-author prev
       break if prev-author isnt \none
-  prev-id = $authorContainer.attr(\id)?replace /^ref-/, ''
 
   if prev-author is authorClass
     $authorContainer.addClass \concise
   else
     $authorContainer.removeClass \concise
 
+  prev-id = $authorContainer.attr(\id)?replace /^ref-/, ''
   if prev-id is $node.attr \id
     authorChanged = toggle-author $authorContainer, "primary", authorClass
     return unless authorChanged
