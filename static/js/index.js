@@ -6,7 +6,7 @@ function allClasses($node){
 function derivePrimaryAuthor($node){
   var byAuthor, mPA, authorClass, author, value;
   byAuthor = {};
-  $node.children('span').each(function(){
+  $node.find('span').each(function(){
     var $this, i$, ref$, len$, spanclass, length, results$ = [];
     $this = $(this);
     for (i$ = 0, len$ = (ref$ = allClasses($this)).length; i$ < len$; ++i$) {

@@ -3,7 +3,7 @@ function all-classes($node)
 
 function derive-primary-author($node)
   by-author = {}
-  $node.children 'span' .each ->
+  $node.find 'span' .each ->
     $this = $ this
     for spanclass in all-classes $this when spanclass is /^author/
       length = $this.text!length
