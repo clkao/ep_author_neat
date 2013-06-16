@@ -1,9 +1,11 @@
+function all-classes($node)
+  ($node.attr(\class) ? '').split ' '
+
 function derive-primary-author($node)
   by-author = {}
   $node.children 'span' .each ->
     $this = $ this
-    allclass = $this.attr 'class' .split ' '
-    for spanclass in allclass when spanclass is /^author/
+    for spanclass in all-classes $this when spanclass is /^author/
       length = $this.text!length
       # the length of the span
       by-author[spanclass] ?= 0
@@ -20,8 +22,7 @@ function derive-primary-author($node)
 function toggle-author($node, prefix, authorClass)
   has-class = false
   my-class = "#prefix-#authorClass"
-  attr = $node.attr(\class) ? ''
-  for c in attr.split ' ' when c.indexOf(prefix) is 0
+  for c in all-classes $node when c.indexOf(prefix) is 0
     if c is my-class
       has-class = true
     else
@@ -30,57 +31,49 @@ function toggle-author($node, prefix, authorClass)
   $node.addClass my-class
   return true
 
-# enter is pressed and there are likely new lines so should work through them
-hasEnter = false
+var $sidedivinner
 
-authorViewUpdate = ($node) ->
+# here we mark primary author on magicdom divs as class
+function update-domline($node)
   lineNumber = $node.index! + 1
-  # dont process lines we dont know the number of.
   return false unless lineNumber
 
-  authorClass = false
-  authorLines[lineNumber] = null
-  $sidedivinner = $ 'iframe[name="ace_outer"]' .contents!find '#sidedivinner'
-  $authorContainer = $sidedivinner.find "div:nth-child(#lineNumber)"
-
-  if $node.text!length > 0
-    authorClass = authorLines[lineNumber] = derive-primary-author $node
+  authorClass = if $node.text!length > 0
+    derive-primary-author $node
   else
-    $authorContainer.addClass "primary-author-none"
+    "none"
 
-  if authorClass
-    toggle-author $node, "primary", authorClass
+  toggle-author $node, "primary", authorClass
+
+  author-view-update $node, lineNumber, null, authorClass
+
+function extract-author($node)
+  [a for a in all-classes $node when a is /^primary-/]?0?replace /^primary-/ ''
+
+# cache the magicdomid to the sidediv lines, and use that to see if the line is dirty
+function author-view-update($node, lineNumber, prev-author, authorClass)
+  $sidedivinner ?:= $ 'iframe[name="ace_outer"]' .contents!find '#sidedivinner'
+  $authorContainer = $sidedivinner.find "div:nth-child(#lineNumber)"
+  authorClass ?= extract-author $node
+  prev-author ?= extract-author $authorContainer.prev!
+  prev-id = $authorContainer.attr(\id)?replace /^ref-/, ''
+
+  if prev-author is authorClass
+    $authorContainer.addClass \concise
+  else
+    $authorContainer.removeClass \concise
+
+  if prev-id is $node.attr \id
     authorChanged = toggle-author $authorContainer, "primary", authorClass
-    prev = lineNumber - 1
-    next = lineNumber + 1
-    # this line shouldn't have any author name.
-    # Does the next line have the same author?
-    if authorLines[next] is authorClass
-      $nextAuthorContainer = $sidedivinner.find "div:nth-child(#next)"
-        ..addClass \concise
-      # does the previous line have the same author?
-      prevLineSameAuthor = authorLines[prev] is authorClass
-      if not prevLineSameAuthor
-        $authorContainer.removeClass \concise
-    else
-      # write the author name
-      # Has the author changed, if so we need to uipdate the UI anyways..
-      prevLineAuthorClass = authorLines[prev]
-      if authorClass isnt prevLineAuthorClass and not authorChanged
-        $authorContainer.removeClass \concise
-      else
-        # write the author name
-        $authorContainer.addClass \concise
-    # If the authorClass is not the same as the previous line author class and the author had not changed
-    $sidedivinner.find "div:nth-child(#lineNumber)"
-      .attr 'title', 'Line number ' + lineNumber
+    return unless authorChanged
+  else
+    $authorContainer.attr \id, 'ref-' + $node.attr \id
+    toggle-author $authorContainer, "primary", authorClass
 
-  if hasEnter
-    next = $node.next!
-    if next.length
-      authorViewUpdate next
-    else
-      hasEnter := false
+  next = $node.next!
+  if next.length
+    console.log \go lineNumber+1
+    authorViewUpdate next, lineNumber+1, authorClass
 
 # add a hover for line numbers
 fadeColor = (colorCSS, fadeFrac) ->
@@ -170,12 +163,8 @@ authorLines = {}
 # When the DOM is edited
 export function acePostWriteDomLineHTML(hook_name, args, cb)
   # avoid pesky race conditions
-  setTimeout (-> authorViewUpdate $ args.node), 200ms
-
-# on an edit
-export function aceKeyEvent(hook_name, {evt}:context, cb)
-  if evt.keyCode is 13 and evt.type is \keyup
-    hasEnter := true
+  <- setTimeout _, 200ms
+  update-domline $ args.node
 
 # on an edit
 export function aceEditEvent(hook_name, {callstack}:context, cb)

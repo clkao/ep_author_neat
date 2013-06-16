@@ -1,13 +1,16 @@
-var hasEnter, authorViewUpdate, fadeColor, getAuthorClassName, init, authorNameAndColorFromAuthorId, authorLines, isStyleFuncSupported, out$ = typeof exports != 'undefined' && exports || this;
+var $sidedivinner, fadeColor, getAuthorClassName, init, authorNameAndColorFromAuthorId, authorLines, isStyleFuncSupported, out$ = typeof exports != 'undefined' && exports || this;
+function allClasses($node){
+  var ref$;
+  return ((ref$ = $node.attr('class')) != null ? ref$ : '').split(' ');
+}
 function derivePrimaryAuthor($node){
   var byAuthor, mPA, authorClass, author, value;
   byAuthor = {};
   $node.children('span').each(function(){
-    var $this, allclass, i$, len$, spanclass, length, results$ = [];
+    var $this, i$, ref$, len$, spanclass, length, results$ = [];
     $this = $(this);
-    allclass = $this.attr('class').split(' ');
-    for (i$ = 0, len$ = allclass.length; i$ < len$; ++i$) {
-      spanclass = allclass[i$];
+    for (i$ = 0, len$ = (ref$ = allClasses($this)).length; i$ < len$; ++i$) {
+      spanclass = ref$[i$];
       if (/^author/.exec(spanclass)) {
         length = $this.text().length;
         byAuthor[spanclass] == null && (byAuthor[spanclass] = 0);
@@ -28,11 +31,10 @@ function derivePrimaryAuthor($node){
   return authorClass;
 }
 function toggleAuthor($node, prefix, authorClass){
-  var hasClass, myClass, attr, ref$, i$, len$, c;
+  var hasClass, myClass, i$, ref$, len$, c;
   hasClass = false;
   myClass = prefix + "-" + authorClass;
-  attr = (ref$ = $node.attr('class')) != null ? ref$ : '';
-  for (i$ = 0, len$ = (ref$ = attr.split(' ')).length; i$ < len$; ++i$) {
+  for (i$ = 0, len$ = (ref$ = allClasses($node)).length; i$ < len$; ++i$) {
     c = ref$[i$];
     if (c.indexOf(prefix) === 0) {
       if (c === myClass) {
@@ -48,53 +50,56 @@ function toggleAuthor($node, prefix, authorClass){
   $node.addClass(myClass);
   return true;
 }
-hasEnter = false;
-authorViewUpdate = function($node){
-  var lineNumber, authorClass, $sidedivinner, $authorContainer, authorChanged, prev, next, x$, $nextAuthorContainer, prevLineSameAuthor, prevLineAuthorClass;
+function updateDomline($node){
+  var lineNumber, authorClass;
   lineNumber = $node.index() + 1;
   if (!lineNumber) {
     return false;
   }
-  authorClass = false;
-  authorLines[lineNumber] = null;
-  $sidedivinner = $('iframe[name="ace_outer"]').contents().find('#sidedivinner');
+  authorClass = $node.text().length > 0 ? derivePrimaryAuthor($node) : "none";
+  toggleAuthor($node, "primary", authorClass);
+  return authorViewUpdate($node, lineNumber, null, authorClass);
+}
+function extractAuthor($node){
+  var ref$, a, ref1$;
+  return (ref$ = (function(){
+    var i$, ref$, len$, results$ = [];
+    for (i$ = 0, len$ = (ref$ = allClasses($node)).length; i$ < len$; ++i$) {
+      a = ref$[i$];
+      if (/^primary-/.exec(a)) {
+        results$.push(a);
+      }
+    }
+    return results$;
+  }())) != null ? (ref1$ = ref$[0]) != null ? ref1$.replace(/^primary-/, '') : void 8 : void 8;
+}
+function authorViewUpdate($node, lineNumber, prevAuthor, authorClass){
+  var $authorContainer, prevId, ref$, authorChanged, next;
+  $sidedivinner == null && ($sidedivinner = $('iframe[name="ace_outer"]').contents().find('#sidedivinner'));
   $authorContainer = $sidedivinner.find("div:nth-child(" + lineNumber + ")");
-  if ($node.text().length > 0) {
-    authorClass = authorLines[lineNumber] = derivePrimaryAuthor($node);
+  authorClass == null && (authorClass = extractAuthor($node));
+  prevAuthor == null && (prevAuthor = extractAuthor($authorContainer.prev()));
+  prevId = (ref$ = $authorContainer.attr('id')) != null ? ref$.replace(/^ref-/, '') : void 8;
+  if (prevAuthor === authorClass) {
+    $authorContainer.addClass('concise');
   } else {
-    $authorContainer.addClass("primary-author-none");
+    $authorContainer.removeClass('concise');
   }
-  if (authorClass) {
-    toggleAuthor($node, "primary", authorClass);
+  if (prevId === $node.attr('id')) {
     authorChanged = toggleAuthor($authorContainer, "primary", authorClass);
-    prev = lineNumber - 1;
-    next = lineNumber + 1;
-    if (authorLines[next] === authorClass) {
-      x$ = $nextAuthorContainer = $sidedivinner.find("div:nth-child(" + next + ")");
-      x$.addClass('concise');
-      prevLineSameAuthor = authorLines[prev] === authorClass;
-      if (!prevLineSameAuthor) {
-        $authorContainer.removeClass('concise');
-      }
-    } else {
-      prevLineAuthorClass = authorLines[prev];
-      if (authorClass !== prevLineAuthorClass && !authorChanged) {
-        $authorContainer.removeClass('concise');
-      } else {
-        $authorContainer.addClass('concise');
-      }
+    if (!authorChanged) {
+      return;
     }
-    $sidedivinner.find("div:nth-child(" + lineNumber + ")").attr('title', 'Line number ' + lineNumber);
+  } else {
+    $authorContainer.attr('id', 'ref-' + $node.attr('id'));
+    toggleAuthor($authorContainer, "primary", authorClass);
   }
-  if (hasEnter) {
-    next = $node.next();
-    if (next.length) {
-      return authorViewUpdate(next);
-    } else {
-      return hasEnter = false;
-    }
+  next = $node.next();
+  if (next.length) {
+    console.log('go', lineNumber + 1);
+    return authorViewUpdate(next, lineNumber + 1, authorClass);
   }
-};
+}
 fadeColor = function(colorCSS, fadeFrac){
   var color;
   color = colorutils.css2triple(colorCSS);
@@ -190,16 +195,8 @@ authorLines = {};
 out$.acePostWriteDomLineHTML = acePostWriteDomLineHTML;
 function acePostWriteDomLineHTML(hook_name, args, cb){
   return setTimeout(function(){
-    return authorViewUpdate($(args.node));
+    return updateDomline($(args.node));
   }, 200);
-}
-out$.aceKeyEvent = aceKeyEvent;
-function aceKeyEvent(hook_name, context, cb){
-  var evt;
-  evt = context.evt;
-  if (evt.keyCode === 13 && evt.type === 'keyup') {
-    return hasEnter = true;
-  }
 }
 out$.aceEditEvent = aceEditEvent;
 function aceEditEvent(hook_name, context, cb){
