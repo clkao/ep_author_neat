@@ -3,7 +3,7 @@ ep_author_neat
 
 Use colored underline for authorship instead of background color.
 
-*This requires develop branch of etherpad-lite*.
+*This requires etherpad-lite 1.3.0 or later*.
 
 Left: original etherpad-lite; Right: ep_author_neat enabled
 
