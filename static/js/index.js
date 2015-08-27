@@ -149,12 +149,14 @@ function outerInit(outerDynamicCSS){
   y$ = outerDynamicCSS.selectorStyle('#sidedivinner > div.concise::before');
   y$.content = "' '";
   z$ = outerDynamicCSS.selectorStyle('#sidedivinner > div');
-  z$.fontSize = '0px';
+  z$.fontSize = '11px';
   z$.paddingRight = '10px';
   z1$ = outerDynamicCSS.selectorStyle('#sidedivinner > div::before');
   z1$.fontSize = 'initial';
   z1$.textOverflow = 'ellipsis';
   z1$.overflow = 'hidden';
+  z1$.paddingRight = '5px';
+  z1$.color = '#333';
   return init = true;
 }
 out$.aceSetAuthorStyle = aceSetAuthorStyle;

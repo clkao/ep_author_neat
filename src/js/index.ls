@@ -110,12 +110,14 @@ function outerInit(outerDynamicCSS)
   outerDynamicCSS.selectorStyle '#sidedivinner > div.concise::before'
     ..content = "' '"
   outerDynamicCSS.selectorStyle '#sidedivinner > div'
-    ..font-size = '0px'
+    ..font-size = '11px'
     ..padding-right = '10px'
   outerDynamicCSS.selectorStyle '#sidedivinner > div::before'
     ..font-size = 'initial'
     ..text-overflow = 'ellipsis'
     ..overflow = 'hidden'
+    ..padding-right = '5px'
+    ..color = '#333'
   init := true
 
 export function aceSetAuthorStyle(name, context)
