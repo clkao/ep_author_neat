@@ -9,7 +9,7 @@ contributors: [
 ]
 name: 'ep_author_neat'
 description: 'Neat author display for etherpad-lite'
-version: '0.0.31'
+version: '0.0.32'
 repository:
   type: 'git'
   url: 'git://github.com/clkao/ep_author_neat.git'
