@@ -57,6 +57,8 @@ function extract-author($node)
 
 # cache the magicdomid to the sidediv lines, and use that to see if the line is dirty
 function author-view-update($node, lineNumber, prev-author, authorClass)
+  if !$sidedivinner
+    $sidedivinner := $ 'iframe[name="ace_outer"]' .contents!find '#sidedivinner'
   $authorContainer = $sidedivinner.find "div:nth-child(#lineNumber)"
   authorClass ?= extract-author $node
   unless prev-author

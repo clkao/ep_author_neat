@@ -88,6 +88,9 @@ function extractAuthor($node){
 }
 function authorViewUpdate($node, lineNumber, prevAuthor, authorClass){
   var $authorContainer, prev, prevId, ref$, authorChanged, next, logicalPrevAuthor;
+  if (!$sidedivinner) {
+    $sidedivinner = $('iframe[name="ace_outer"]').contents().find('#sidedivinner');
+  }
   $authorContainer = $sidedivinner.find("div:nth-child(" + lineNumber + ")");
   authorClass == null && (authorClass = extractAuthor($node));
   if (!prevAuthor) {
