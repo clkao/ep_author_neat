@@ -19,15 +19,10 @@
     "type": "git",
     "url": "git://github.com/clkao/ep_author_neat.git"
   },
-  "scripts": {
-    "prepublish": "./node_modules/.bin/lsc -cj package.ls &&\n./node_modules/.bin/lsc -bc -o static/js src/js"
-  },
   "engines": {
     "node": "*"
   },
   "dependencies": {},
-  "devDependencies": {
-    "LiveScript": "1.1.1"
-  },
+  "devDependencies": {},
   "optionalDependencies": {}
 }
