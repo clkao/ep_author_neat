@@ -3,17 +3,12 @@ function all-classes($node) => ($node.attr(\class) ? '').split ' '
 var $sidedivinner
 export function postAceInit(hook_name, {ace})
   $sidedivinner := $ 'iframe[name="ace_outer"]' .contents!find '#sidedivinner'
-    .addClass \authorColors
-  ace.callWithAce (ace) ->
-    $doc = $ ace.ace_getDocument!
-    $body = $doc.find \body
-    $body .get 0 .ownerDocument
-      ..addEventListener \focus (->
-        $sidedivinner.addClass \authorColors
-        $body.addClass \focus), true
-      ..addEventListener \blur (->
-        $sidedivinner.removeClass \authorColors
-        $body.removeClass \focus), true
+  if ! $ '#editorcontainerbox' .hasClass 'flex-layout'
+    $ .gritter .add do
+      title: "Error",
+      text: "Ep_author_neat: Please upgrade to etherpad 1.8.4 for this plugin to work correctly",
+      sticky: true,
+      class_name: "error"
 
 function derive-primary-author($node)
   by-author = {}
@@ -104,16 +99,13 @@ getAuthorClassName = (author) ->
 # XXX: this should be just injected with aceEditorCSS. investigate if we can inject outer
 var init
 function outerInit(outerDynamicCSS)
-  outerDynamicCSS.selectorStyle '#sidedivinner > div.primary-author-none'
-    ..border-right = 'solid 0px '
-    ..padding-right = '5px'
-  outerDynamicCSS.selectorStyle '#sidedivinner > div.concise::before'
+  outerDynamicCSS.selectorStyle '#sidedivinner.authorColors > div'
+    ..border-right = 'solid 5px transparent'
+  outerDynamicCSS.selectorStyle '#sidedivinner.authorColors > div.concise::before'
     ..content = "' '"
-  outerDynamicCSS.selectorStyle '#sidedivinner > div'
-    ..font-size = '0px'
-    ..padding-right = '10px'
-  outerDynamicCSS.selectorStyle '#sidedivinner > div::before'
-    ..font-size = 'initial'
+  outerDynamicCSS.selectorStyle '#sidedivinner.authorColors > div::before'
+    ..font-size = '11px'
+    ..text-transform = 'capitalize'
     ..text-overflow = 'ellipsis'
     ..overflow = 'hidden'
   init := true
@@ -128,22 +120,24 @@ export function aceSetAuthorStyle(name, context)
     authorClass = getAuthorClassName author
     authorName = authorNameAndColorFromAuthorId author .name
     # author style
-    dynamicCSS.selectorStyle ".authorColors.focus span.#authorClass"
+    dynamicCSS.selectorStyle ".authorColors span.#authorClass"
       ..border-bottom = "2px solid #color"
     parentDynamicCSS.selectorStyle authorSelector
       ..border-bottom = "2px solid #color"
     # primary author override
-    dynamicCSS.selectorStyle ".authorColors.focus .primary-#authorClass .#authorClass"
+    dynamicCSS.selectorStyle ".authorColors .primary-#authorClass .#authorClass"
       ..border-bottom = '0px'
     # primary author style on left
     outerDynamicCSS.selectorStyle "\#sidedivinner.authorColors > div.primary-#authorClass"
       ..border-right = "solid 5px #{color}"
-      ..padding-right = '5px'
-    outerDynamicCSS.selectorStyle "\#sidedivinner > div.primary-#authorClass::before"
+    outerDynamicCSS.selectorStyle "\#sidedivinner.authorColors > div.primary-#authorClass::before"
       ..content = "'#{ authorName }'"
+      ..padding-left = "5px"
+    outerDynamicCSS.selectorStyle ".line-numbers-hidden \#sidedivinner.authorColors > div.primary-#authorClass::before"
+      ..padding-right = "12px"
 
   else
-    dynamicCSS.removeSelectorStyle ".authorColors.focus span.#authorClass"
+    dynamicCSS.removeSelectorStyle ".authorColors span.#authorClass"
     parentDynamicCSS.removeSelectorStyle authorSelector
   1
 
