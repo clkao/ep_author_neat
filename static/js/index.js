@@ -164,11 +164,13 @@ function aceSetAuthorStyle(name, context){
     }
     authorClass = getAuthorClassName(author);
     authorName = authorNameAndColorFromAuthorId(author).name;
-    x$ = dynamicCSS.selectorStyle(".authorColors span." + authorClass);
+    x$ = dynamicCSS.selectorStyle("#innerdocbody.authorColors span." + authorClass);
     x$.borderBottom = "2px solid " + color;
+    x$.paddingBottom = "1px";
     y$ = parentDynamicCSS.selectorStyle(authorSelector);
     y$.borderBottom = "2px solid " + color;
-    z$ = dynamicCSS.selectorStyle(".authorColors .primary-" + authorClass + " ." + authorClass);
+    y$.paddingBottom = "1px";
+    z$ = dynamicCSS.selectorStyle("#innerdocbody.authorColors .primary-" + authorClass + " span." + authorClass);
     z$.borderBottom = '0px';
     z1$ = outerDynamicCSS.selectorStyle("#sidedivinner.authorColors > div.primary-" + authorClass);
     z1$.borderRight = "solid 5px " + color;
@@ -178,7 +180,7 @@ function aceSetAuthorStyle(name, context){
     z3$ = outerDynamicCSS.selectorStyle(".line-numbers-hidden #sidedivinner.authorColors > div.primary-" + authorClass + "::before");
     z3$.paddingRight = "12px";
   } else {
-    dynamicCSS.removeSelectorStyle(".authorColors span." + authorClass);
+    dynamicCSS.removeSelectorStyle("#innerdocbody.authorColors span." + authorClass);
     parentDynamicCSS.removeSelectorStyle(authorSelector);
   }
   return 1;
