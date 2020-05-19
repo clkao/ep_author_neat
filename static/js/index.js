@@ -175,6 +175,7 @@ function aceSetAuthorStyle(name, context){
     z2$ = outerDynamicCSS.selectorStyle("#sidedivinner.authorColors > div.primary-" + authorClass + "::before");
     z2$.content = "'" + authorName + "'";
     z2$.paddingLeft = "5px";
+    z2$.whiteSpace = "nowrap";
     z3$ = outerDynamicCSS.selectorStyle(".line-numbers-hidden #sidedivinner.authorColors > div.primary-" + authorClass + "::before");
     z3$.paddingRight = "12px";
   } else {
