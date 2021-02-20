@@ -226,7 +226,7 @@ function aceEditEvent(hook_name, context, cb){
   var callstack, x$;
   callstack = context.callstack;
   if (callstack.type !== 'setWraps') {
-    return;
+    return false;
   }
   x$ = $('iframe[name="ace_outer"]').contents();
   x$.find('#sidediv').css({
